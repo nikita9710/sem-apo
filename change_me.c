@@ -1,17 +1,3 @@
-/*******************************************************************
-  Simple program to check LCD functionality on MicroZed
-  based MZ_APO board designed by Petr Porazil at PiKRON
-
-  mzapo_lcdtest.c       - main and only file
-
-  (C) Copyright 2004 - 2017 by Pavel Pisa
-      e-mail:   pisa@cmp.felk.cvut.cz
-      homepage: http://cmp.felk.cvut.cz/~pisa
-      work:     http://www.pikron.com/
-      license:  any combination of GPL, LGPL, MPL or BSD licenses
-
- *******************************************************************/
-
 #define _POSIX_C_SOURCE 200112L
 
 #include <stdlib.h>
@@ -19,7 +5,8 @@
 #include <stdint.h>
 #include <time.h>
 #include <unistd.h>
-
+#include <stdbool.h>
+#include <time.h>
 #include "mzapo_parlcd.h"
 #include "mzapo_phys.h"
 #include "mzapo_regs.h"
@@ -47,33 +34,47 @@ int main(int argc, char *argv[])
   *(volatile uint16_t*)(parlcd_mem_base + PARLCD_REG_CMD_o) = 0x2c;
 
   uint32_t rgb_knobs_value;
-  int rk, gk, bk;
+  int rk, gk, bk,rb, gb, bb;
+  clock_t before = clock();
+  clock_t difference = clock() - before;
   while (1)
   {
     rgb_knobs_value = *(volatile uint32_t*)(mem_base + SPILED_REG_KNOBS_8BIT_o);
     bk =  rgb_knobs_value      & 0xFF; // blue knob position
     gk = (rgb_knobs_value>>8)  & 0xFF; // green knob position
     rk = (rgb_knobs_value>>16) & 0xFF; // red knob position
-    int r = bk;
-    int x0 = gk;
-    int y0 = rk;
-    for (int i = 0; i < 320*480; i++)
-    {
-      int x = i / 480 -x0;
-      int y = i % 480 -y0;
-      if (abs(x*x+y*y - r*r) <= 2*r)
-      {
-        *(volatile uint16_t*)(parlcd_mem_base + PARLCD_REG_DATA_o) = 0x0;
-        //usleep(10);
-      }
-      else
-      {
-        *(volatile uint16_t*)(parlcd_mem_base + PARLCD_REG_DATA_o) = 0xFFFF;
-        //usleep(10);
-      }
-    }
-    usleep(500);
-    // printf("%d %d %d\n", bk, gk, rk);
+    bb = (rgb_knobs_value>>24) & 1;    // blue button
+    gb = (rgb_knobs_value>>25) & 1;    // green button
+    rb = (rgb_knobs_value>>26) & 1;    // red buttom
+
+
+  bool isTogether = false;
+  int leftcolor, rightcolor, mode; //0 - still, 1 - gradient, 2 - blinkkink
+  int leftnew, rightnew, changetime;
+  int blinktime, faddetime, phase;
+
+  before = clock();
+  difference = clock() - before;
+    // int r = bk;
+    // int x0 = gk;
+    // int y0 = rk;
+    // for (int i = 0; i < 320*480; i++)
+    // {
+    //   int x = i / 480 -x0;
+    //   int y = i % 480 -y0;
+    //   if (abs(x*x+y*y - r*r) <= 2*r)
+    //   {
+    //     *(volatile uint16_t*)(parlcd_mem_base + PARLCD_REG_DATA_o) = 0x0;
+    //     //usleep(10);
+    //   }
+    //   else
+    //   {
+    //     *(volatile uint16_t*)(parlcd_mem_base + PARLCD_REG_DATA_o) = 0xFFFF;
+    //     //usleep(10);
+    //   }
+    // }
+    // usleep(500);
+    // // printf("%d %d %d\n", bk, gk, rk);
   }
 
   printf("Goodbye world\n");
