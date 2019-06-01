@@ -37,56 +37,6 @@ int main(int argc, char *argv[])
   int rk, gk, bk,rb, gb, bb;
   clock_t before = clock();
   clock_t difference = clock() - before;
-<<<<<<< HEAD
-  typedef struct Point{
-    int x;
-    int y;
-  }
-
-//function to find the left corner for a text
-  // Point textCornerCoordinate(char* str, int blockX, int blockY){
-  //   int string_width = 0;
-  //   char c;
-  //   while((c = *str++) != 0){
-  //     int cix = c - ' ';
-  //     if(cix < 0) cix = 0;
-  //     string_width += font_winFreeSystem14x16.width[cix];
-  //   }
-  //   Point coor;
-  //   coor.x = blockX + (120 - string_width)/2;
-  //   coor.y = blockY + 8;
-  //   return coor
-
-  // }
-
-  // fillBlock(char *str, int coorX, int coorY){
-  int string_width = 0;
-  char c;
-  int textX;
-  int textY;
-  while((c = *str++) != 0){
-    int num = c - ' ';
-    if(num < 0) num = 0;
-    string_width += font_winFreeSystem14x16.width[num];
-    printf(font_winFreeSystem14x16.width[num]);
-  }
-  textX = coorX + (120 - string_width)/2;
-  textY = coorY + 8;
-
-  // }
-  //fill the block (coordinates of a block and etc)
-  //fillBlock(char* str, int  blockX, int  blockY){textCoor = textCornerCoordinate(char*str, )
-  //for char in a string
-  //pixels aldy , pixeldyn tuse almastyru
-  //дефолтные по бокам ,12 вызовов для функции
-  //по нажатию кноба отслеживать их координаты 
-  //наверху название 
-  //внизу подсказки
-  //передавать я буду 0 1 2 завимисимости от положения кноба
-  //передавать значения лефтколор и блаблрала 
-  
-=======
->>>>>>> master
   while (1)
   {
     rgb_knobs_value = *(volatile uint32_t*)(mem_base + SPILED_REG_KNOBS_8BIT_o);
@@ -126,7 +76,6 @@ int main(int argc, char *argv[])
     // usleep(500);
     // // printf("%d %d %d\n", bk, gk, rk);
   }
-
 
   printf("Goodbye world\n");
 
