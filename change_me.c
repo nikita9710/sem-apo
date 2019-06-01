@@ -84,14 +84,12 @@ void fillBlock(char* str, int blockX, int blockY, int size){
             if(num2 < 0) num2 = 0;
             charWidth = font_winFreeSystem14x16.width[num2];
             for(int lineChar = 0; lineChar < 16; lineChar++){
-                int newY = size*lineChar;
                 int bitLineChar  = font_winFreeSystem14x16.bits[num2 * 16 + lineChar];
                 for(int xBit = 0; xBit<charWidth; xBit++){
-                    int newX = size * xBit;
                     if(bitLineChar & 0x8000){
                         for(int k = 0; k <size; k++){
                             for(int l = 0; l<size; l++){
-                                lcdPixels[textX + newX +k][textY + newY +l] = 0x0;
+                                lcdPixels[textX + xBit*size +k][textY + lineChar*size +l] = 0x0;
 
                             }
                         }
