@@ -21,12 +21,37 @@ void blockColorChange(int blockX, int blockY, int blockXrange, int blockYrange, 
         }
     }
 };
+<<<<<<< HEAD
+=======
+//left border and down border of a box
+void boardBorder(){
+    //down border
+    for(int downBorder = 0; downBorder < 480; downBorder++){
+        lcdPixels[downBorder][319] = 0x07E0;
+    }
+    //left border
+    for(int leftBorder = 0; leftBorder < 320; leftBorder++){
+        lcdPixels[0][leftBorder] = 0x07E0;
+    }
+}
+>>>>>>> master
 
 //Fill the bord with a word
 void fillBlock(char *str, int blockX, int blockY){
         int string_width = 0;
         char c;
         int textX,textY,charWidth, num1, num2;
+<<<<<<< HEAD
+=======
+        //up border of a block
+        for(int borderX = 0; borderX<blockX+120; borderX++){
+            lcdPixels[borderX][blockY + 63] = 0x0;
+        }
+        //right border of a block
+        for(int borderY = 0; borderY < blockY + 64; borderY++){
+            lcdPixels[blockX + 119][borderY] = 0x0;
+        }
+>>>>>>> master
         //calculate the length of the string to put it in the middle of the block
         while((c = *str++) != 0){
             num1 = c - ' ';
@@ -52,6 +77,7 @@ void fillBlock(char *str, int blockX, int blockY){
             }
 	    }      
 }
+<<<<<<< HEAD
 int main(int argc, char *argv[])
 { 
     //color whole background
@@ -76,8 +102,47 @@ int main(int argc, char *argv[])
 //   if (parlcd_mem_base == NULL)  exit(1);
 
 //   parlcd_hx8357_init(parlcd_mem_base);
+=======
 
-//   *(volatile uint16_t*)(parlcd_mem_base + PARLCD_REG_CMD_o) = 0x2c;
+int main(int argc, char *argv[])
+{ 
+    //color whole background
+    blockColorChange(0,0,480,320, 0x07E0);
+    boardBorder();
+    //Fill the  Blocks for two lines
+    fillBlock("Light:", 0, 0);
+    fillBlock("Left", 120, 0);
+    fillBlock("Right:", 240, 0);
+    fillBlock("Both", 360, 0);
+    fillBlock("Mode:", 0, 128);
+    fillBlock("Still", 120, 128);
+    fillBlock("Grad", 240, 128);
+    fillBlock("Shift", 360, 128);
+
+    //lcd
+    unsigned char *parlcd_mem_base;
+    parlcd_mem_base = map_phys_address(PARLCD_REG_BASE_PHYS, PARLCD_REG_SIZE, 0);
+    if (parlcd_mem_base == NULL)  exit(1);
+    parlcd_hx8357_init(parlcd_mem_base);
+    *(volatile uint16_t*)(parlcd_mem_base + PARLCD_REG_CMD_o) = 0x2c;
+    // lcd = map_phys_address(PARLCD_REG_BASE_PHYS, 4, false);
+    for (int y = 0; y < 480; ++y) {
+		for (int x = 0; x < 320; ++x) {
+			parlcd_write_data(parlcd_mem_base, lcdPixels[y][x]);
+		}
+	}
+
+    // int row, columns;
+    // for (int row=0; row<320; row++)
+    // {
+    //     for(int columns=0; columns<480; columns++)
+    //         {
+    //         printf("%d     ", lcdPixels[columns][row]);
+    //         }
+    //     printf("\n");
+    // }
+>>>>>>> master
+
 
 //   uint32_t rgb_knobs_value;
 //   int rk, gk, bk,rb, gb, bb;
