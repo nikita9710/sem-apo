@@ -48,13 +48,136 @@ int main(int argc, char *argv[])
     rb = (rgb_knobs_value>>26) & 1;    // red buttom
 
 
-  bool isTogether = false;
+  bool isTogether = false, changed = true;
   int leftcolor, rightcolor, mode; //0 - still, 1 - gradient, 2 - blinkkink
   int leftnew, rightnew, changetime;
-  int blinktime, faddetime, phase;
+  bool reverse = false, lefton = true, righton = true;
+  int blinktime, fadetime, shift;
 
-  before = clock();
-  difference = clock() - before;
+  // if (!changed) continue;
+  if (mode == 1)
+  {
+    *(volatile uint32_t*)(mem_base + SPILED_REG_LED_RGB1_o) = leftcolor;
+    *(volatile uint32_t*)(mem_base + SPILED_REG_LED_RGB2_o) = isTogether? leftcolor : rightcolor;
+  }
+  else if (mode == 2)
+  {
+    if (changed) 
+    {
+      before = clock();
+      reverse = false;
+      *(volatile uint32_t*)(mem_base + SPILED_REG_LED_RGB1_o) = leftcolor;
+      *(volatile uint32_t*)(mem_base + SPILED_REG_LED_RGB2_o) = isTogether? leftcolor : rightcolor;
+    }
+    else
+    {
+      difference = clock() - before;
+      if (difference >= changetime)
+      {
+        if (reverse)
+        {
+          *(volatile uint32_t*)(mem_base + SPILED_REG_LED_RGB1_o) = leftcolor;
+          *(volatile uint32_t*)(mem_base + SPILED_REG_LED_RGB2_o) = isTogether? leftcolor : rightcolor;
+        }
+        else
+        {
+          *(volatile uint32_t*)(mem_base + SPILED_REG_LED_RGB1_o) = leftnew;
+          *(volatile uint32_t*)(mem_base + SPILED_REG_LED_RGB2_o) = isTogether? leftnew : rightnew;
+        }
+        reverse = !reverse;
+        before = clock();
+      }
+      else
+      {
+        //average colors??????????
+      }
+    }
+  }
+  else
+  {
+    if (changed) 
+    {
+      before = clock();
+      lefton = true;
+      righton = true;
+      *(volatile uint32_t*)(mem_base + SPILED_REG_LED_RGB1_o) = leftcolor;
+      *(volatile uint32_t*)(mem_base + SPILED_REG_LED_RGB2_o) = isTogether? leftcolor : rightcolor;
+    }
+    else
+    {
+      difference = clock() - before;
+      int differencer = clock() - before - shift;
+      if (lefton)
+      {
+        if (difference >= blinktime)
+        {
+          *(volatile uint32_t*)(mem_base + SPILED_REG_LED_RGB1_o) = 0x0;
+          if (shift == 0) 
+          {
+            *(volatile uint32_t*)(mem_base + SPILED_REG_LED_RGB2_o) = 0x0;
+            righton = false;
+          }
+          lefton = false;
+          before = clock();
+        }
+      }
+      else
+      {
+        if (difference >= fadetime)
+        {
+          *(volatile uint32_t*)(mem_base + SPILED_REG_LED_RGB1_o) = leftcolor;
+          if (shift == 0) 
+          {
+            *(volatile uint32_t*)(mem_base + SPILED_REG_LED_RGB2_o) = isTogether? leftcolor : rightcolor;
+            righton = true;
+          }
+          lefton = true;
+          before = clock();
+        }
+      }
+      if (shift != 0)
+      {
+          if (righton)
+          {
+            if (difference >= blinktime)
+            {
+              *(volatile uint32_t*)(mem_base + SPILED_REG_LED_RGB2_o) = 0x0;
+              righton = false;
+              before = clock();
+            }
+          }
+          else
+          {
+            if (difference >= fadetime)
+            {
+              *(volatile uint32_t*)(mem_base + SPILED_REG_LED_RGB2_o) = isTogether? leftcolor : rightcolor;
+              righton = true;
+              before = clock();
+            }
+          }
+      }
+      if (difference >= changetime)
+      {
+        if (reverse)
+        {
+          *(volatile uint32_t*)(mem_base + SPILED_REG_LED_RGB1_o) = leftcolor;
+          *(volatile uint32_t*)(mem_base + SPILED_REG_LED_RGB2_o) = isTogether? leftcolor : rightcolor;
+        }
+        else
+        {
+          *(volatile uint32_t*)(mem_base + SPILED_REG_LED_RGB1_o) = leftnew;
+          *(volatile uint32_t*)(mem_base + SPILED_REG_LED_RGB2_o) = isTogether? leftnew : rightnew;
+        }
+        reverse = !reverse;
+        before = clock();
+      }
+      else
+      {
+        //average colors??????????
+      }
+    }
+  }
+  
     // int r = bk;
     // int x0 = gk;
     // int y0 = rk;

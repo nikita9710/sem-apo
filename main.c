@@ -21,8 +21,6 @@ void blockColorChange(int blockX, int blockY, int blockXrange, int blockYrange, 
         }
     }
 };
-<<<<<<< HEAD
-=======
 //left border and down border of a box
 void boardBorder(){
     //down border
@@ -34,15 +32,12 @@ void boardBorder(){
         lcdPixels[0][leftBorder] = 0x07E0;
     }
 }
->>>>>>> master
 
 //Fill the bord with a word
 void fillBlock(char *str, int blockX, int blockY){
         int string_width = 0;
         char c;
         int textX,textY,charWidth, num1, num2;
-<<<<<<< HEAD
-=======
         //up border of a block
         for(int borderX = 0; borderX<blockX+120; borderX++){
             lcdPixels[borderX][blockY + 63] = 0x0;
@@ -51,7 +46,6 @@ void fillBlock(char *str, int blockX, int blockY){
         for(int borderY = 0; borderY < blockY + 64; borderY++){
             lcdPixels[blockX + 119][borderY] = 0x0;
         }
->>>>>>> master
         //calculate the length of the string to put it in the middle of the block
         while((c = *str++) != 0){
             num1 = c - ' ';
@@ -77,32 +71,6 @@ void fillBlock(char *str, int blockX, int blockY){
             }
 	    }      
 }
-<<<<<<< HEAD
-int main(int argc, char *argv[])
-{ 
-    //color whole background
-    blockColorChange(0,0,480,320, 0xFFFF);
-    //Fill the first Block
-    fillBlock("hello", 0, 0);
-
-//   printf("Hello world\n");
-//   unsigned char *mem_base;
-
-//   mem_base = map_phys_address(SPILED_REG_BASE_PHYS, SPILED_REG_SIZE, 0);
-
-//   if (mem_base == NULL) exit(1);
-//   *(volatile uint32_t*)(mem_base + SPILED_REG_LED_RGB1_o) = 0x00FF0000;
-//   *(volatile uint32_t*)(mem_base + SPILED_REG_LED_RGB2_o) = 0x000000FF; 
-
-//   unsigned char *parlcd_mem_base;
-
-//   parlcd_mem_base = map_phys_address(PARLCD_REG_BASE_PHYS, PARLCD_REG_SIZE, 0);
-
-
-//   if (parlcd_mem_base == NULL)  exit(1);
-
-//   parlcd_hx8357_init(parlcd_mem_base);
-=======
 
 int main(int argc, char *argv[])
 { 
@@ -141,7 +109,6 @@ int main(int argc, char *argv[])
     //         }
     //     printf("\n");
     // }
->>>>>>> master
 
 
 //   uint32_t rgb_knobs_value;
