@@ -314,17 +314,16 @@ int main(int argc, char *argv[])
         {
         case 1:
           mode = 1;
-          background(0,106,0xffff,480);
+          background(120,106,0xffff,360);
           background(0,159,0xD6DA,480);
           background(0,212,0xD6DA,480);
-          background(120,106,0xffff, 240);
           fillBlock("Use knobs", 120, 106,240,53,2);
           if (!isTogether) fillBlock("Copy", 360, 106,120,53,2);
           else background(360,106,0xD6DA, 120);
           break;
         case 2:
           mode = 2;
-          background(0,106,0xffff,480);
+          background(120,106,0xffff,360);
           background(0,159,0xffff,480);
           background(0,212,0xD6DA,480);
           fillBlock("Color 1", 120, 106,120,53,2);
@@ -339,10 +338,9 @@ int main(int argc, char *argv[])
           break;
         case 3:
           mode = 3;
-          background(0,106,0xffff,480);
+          background(120,106,0xffff,360);
           background(0,159,0xffff,480);
           background(0,212,0xffff,480);
-          background(120,106,0xffff, 240);
           fillBlock("Use knobs", 120, 106,240,53,2);
           if (!isTogether) fillBlock("Copy", 360, 106,120,53,2);
           else background(360,106,0xD6DA, 120);
