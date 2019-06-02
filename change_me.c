@@ -32,7 +32,7 @@ void background(int blockX, int blockY,uint16_t color, int blockXsize){
 }
 void chosenBorder(int blockX, int blockY, uint16_t color, bool isDoubled){
   //up border
-  for(int downBorder = 0; downBorder < isDoubled ? 239: 119; downBorder++){
+  for(int downBorder = 0; downBorder < (isDoubled ? 239: 119); downBorder++){
   lcdPixels[downBorder+blockX][blockY+1] = color;
   lcdPixels[downBorder+blockX][blockY+2] = color;
   lcdPixels[downBorder+blockX][blockY+3] = color;
@@ -45,12 +45,12 @@ void chosenBorder(int blockX, int blockY, uint16_t color, bool isDoubled){
   }
   //right border
   for(int leftBorder = 0; leftBorder < 52; leftBorder++){
-  lcdPixels[blockX+isDoubled ? 236: 116][leftBorder+blockY] = color;
-  lcdPixels[blockX+isDoubled ? 237: 117][leftBorder+blockY] = color;
-  lcdPixels[blockX+isDoubled ? 238: 118][leftBorder+blockY] = color;
+  lcdPixels[blockX+(isDoubled ? 236: 116)][leftBorder+blockY] = color;
+  lcdPixels[blockX+(isDoubled ? 237: 117)][leftBorder+blockY] = color;
+  lcdPixels[blockX+(isDoubled ? 238: 118)][leftBorder+blockY] = color;
   }
   //down border
-  for(int downBorder = 0; downBorder < isDoubled ? 239: 119; downBorder++){
+  for(int downBorder = 0; downBorder < (isDoubled ? 239: 119); downBorder++){
   lcdPixels[downBorder+blockX][blockY+49] = color;
   lcdPixels[downBorder+blockX][blockY+50] = color;
   lcdPixels[downBorder+blockX][blockY+51] = color;
