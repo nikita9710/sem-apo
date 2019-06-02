@@ -211,11 +211,7 @@ int main(int argc, char *argv[])
       {
       case 1:
         if (currentRow == 6) break;
-        if (currentRow == 3) 
-        {
-          if (!isTogether) currentColumn = currentColumn == 1 ? 3 : 1;
-          break;
-        }
+        if (currentRow == 3) break;
         currentColumn = currentColumn == 3 ? 1 : currentColumn+1;
         break;
       case 2:
@@ -234,11 +230,7 @@ int main(int argc, char *argv[])
         break;
       case 3:
         if (currentRow == 6) break;
-        if (currentRow == 3) 
-        {
-          if (!isTogether) currentColumn = currentColumn == 1 ? 3 : 1;
-          break;
-        }
+        if (currentRow == 3) break;
         if (currentRow == 5)
         {
           currentColumn = currentColumn == 3 ? 2 : 3;
@@ -261,8 +253,16 @@ int main(int argc, char *argv[])
         switch (currentRow)
         {
         case 2:
-          currentRow = 6;
-          currentColumn = 3;
+          if (isTogether)
+          {
+            currentRow = 6;
+            currentColumn = 3;
+          }
+          else
+          {
+            currentRow = 3;
+            currentColumn = 3;
+          }
         break;
         case 6:
           currentRow = 1;
@@ -299,7 +299,15 @@ int main(int argc, char *argv[])
         switch (currentRow)
         {
         case 2:
-          currentRow = 4;
+          if (isTogether)
+          {
+            currentRow = 4;
+          }
+          else
+          {
+            currentRow = 3;
+            currentColumn = 3;
+          }
           break;
         case 4:
           if (currentColumn == 1) currentColumn = 2;
@@ -512,7 +520,7 @@ int main(int argc, char *argv[])
         righton = true;
         *(volatile uint32_t*)(mem_base + SPILED_REG_LED_RGB1_o) = leftcolorhsv;
         *(volatile uint32_t*)(mem_base + SPILED_REG_LED_RGB2_o) = isTogether? leftcolorhsv : rightcolorhsv;
-    c   hanged = false;
+        changed = false;
       }
       else
       {
