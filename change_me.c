@@ -52,9 +52,9 @@ void chosenBorder(int blockX, int blockY, uint16_t color){
   }
   //down border
   for(int downBorder = 0; downBorder < 119; downBorder++){
-  lcdPixels[downBorder+blockX][blockY+60] = color;
-  lcdPixels[downBorder+blockX][blockY+61] = color;
-  lcdPixels[downBorder+blockX][blockY+62] = color;
+  lcdPixels[downBorder+blockX][blockY+53] = color;
+  lcdPixels[downBorder+blockX][blockY+54] = color;
+  lcdPixels[downBorder+blockX][blockY+55] = color;
   }
 }
 void boardBorder(){
@@ -185,18 +185,24 @@ int main(int argc, char *argv[])
     background(0,53,toRGB565(0xcc,0xcc,0xcc));
     fillBlock("Mode:", 0, 53,120,53,2);
     fillBlock("Still", 120, 53,120,53,2);
-    fillBlock("Grad", 240, 53,120,53,2);
-    fillBlock("Shift", 360, 53,120,53,2);
-    background(0,128,toRGB565(0xcc,0xcc,0xcc));
+    fillBlock("Gradient", 240, 53,120,53,2);
+    fillBlock("Blink", 360, 53,120,53,2);
+    background(0,106,toRGB565(0xcc,0xcc,0xcc));
     fillBlock("Color:", 0, 106,120,53,2);
     fillBlock("Left", 120, 106,120,53,2);
     fillBlock("Right", 240, 106,120,53,2);
     fillBlock("Copy", 360, 106,120,53,2);
-    background(0,192,toRGB565(0xcc,0xcc,0xcc));
-    fillBlock("Mode:", 0, 159,120,53,2);
-    fillBlock("Still", 120, 159,120,53,2);
-    fillBlock("Grad", 240, 159,120,53,2);
+    background(0,159,toRGB565(0xcc,0xcc,0xcc));
+    fillBlock("Setup:", 0, 159,120,53,2);
+    fillBlock("Time on", 120, 159,120,53,2);
+    fillBlock("Time off", 240, 159,120,53,2);
     fillBlock("Shift", 360, 159,120,53,2);
+    background(0,214,toRGB565(0xcc,0xcc,0xcc));
+    fillBlock("Time on", 0, 214,120,53,2);
+    fillBlock("1,0", 120, 214,120,53,2);
+    fillBlock("+0,5", 240, 214,120,53,2);
+    fillBlock("-0,5", 360, 214,120,53,2);
+    fillBlock("Font", 360, 266,120,53,2);
     //lcd
     unsigned char *parlcd_mem_base;
     parlcd_mem_base = map_phys_address(PARLCD_REG_BASE_PHYS, PARLCD_REG_SIZE, 0);
@@ -215,7 +221,7 @@ int main(int argc, char *argv[])
   clock_t differencer = clock() - beforer; 
   bool isLeft = false, isRight = false, isTogether = false, changed = true;
   RGB leftcolor = {0, 255, 0}, rightcolor = {255, 0, 0}, leftnew = {0,0,255}, rightnew = {255,255,255};
-  int leftcolorhsv = 0xaa11, rightcolorhsv  = 0xbbbb, mode = 2; //1 - still, 2 - gradient, 3 - blinkkink
+  int leftcolorhsv = 0xaa11, rightcolorhsv  = 0xbbbb, mode = 1; //1 - still, 2 - gradient, 3 - blinkkink
   int  changetime = 1000000;
   bool reverse = false, lefton = true, righton = true;
   int blinktime = 100000, fadetime = 100000, shift = 50000;
@@ -241,6 +247,7 @@ int main(int argc, char *argv[])
         if (currentRow == 3) 
         {
           if (!isTogether) currentColumn = currentColumn == 1 ? 3 : 1;
+          break;
         }
         currentColumn = currentColumn == 3 ? 1 : currentColumn+1;
         break;
