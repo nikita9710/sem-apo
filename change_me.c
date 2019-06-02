@@ -14,7 +14,7 @@
 uint16_t lcdPixels[480][320];
 
 //to color one bloch hen it is chosen
-//usual blockXrange is 120, usual blockYRange is 64
+//usual blockXrange is 120, usual blockYRange is 64 //53
 void blockColorChange(int blockX, int blockY, int blockXrange, int blockYrange,  uint16_t color){
     for(int x = blockX; x < blockX + blockXrange; ++x){
         for(int y = blockY; y < blockY + blockYrange; ++y){
@@ -24,7 +24,7 @@ void blockColorChange(int blockX, int blockY, int blockXrange, int blockYrange, 
 };
 void background(int blockX, int blockY,uint16_t color){
   for(int x = blockX; x < blockX + 120; ++x){
-        for(int y = blockY; y < blockY + 64; ++y){
+        for(int y = blockY; y < blockY + 53; ++y){
           if(lcdPixels[x][y] != 0x0){
             lcdPixels[x][y] = color;}
         }
@@ -39,13 +39,13 @@ void chosenBorder(int blockX, int blockY, uint16_t color){
   lcdPixels[downBorder+blockX][blockY+3] = color;
   }
   //left border
-  for(int leftBorder = 1; leftBorder < 63; leftBorder++){
+  for(int leftBorder = 1; leftBorder < 52; leftBorder++){
   lcdPixels[blockX+1][leftBorder+blockY] = color;
   lcdPixels[blockX+2][leftBorder+blockY] = color;
   lcdPixels[blockX+3][leftBorder+blockY] = color;
   }
   //right border
-  for(int leftBorder = 1; leftBorder < 63; leftBorder++){
+  for(int leftBorder = 1; leftBorder < 52; leftBorder++){
   lcdPixels[blockX+116][leftBorder+blockY] = color;
   lcdPixels[blockX+117][leftBorder+blockY] = color;
   lcdPixels[blockX+118][leftBorder+blockY] = color;
@@ -159,6 +159,12 @@ int rgbtohex(RGB rgb)
   return ((rgb.r & 0xff) << 16) + ((rgb.g & 0xff) << 8) + (rgb.b & 0xff);
 }
 
+void setfocus(int col, int row, int oldcol, int oldrow)
+{
+  chosenBorder(120*(oldcol),53*(oldrow),0xffff);
+  chosenBorder(120*(col),53*row,0x07E0);
+}
+
 int main(int argc, char *argv[])
 { 
   unsigned char *mem_base;
@@ -171,26 +177,26 @@ int main(int argc, char *argv[])
     
     //Fill the  Blocks for two lines
     
-    fillBlock("LED:", 0, 0,120,64,2);
+    fillBlock("LED:", 0, 0,120,53,2);
     background(0,0,toRGB565(0xcc,0xcc,0xcc));
-    fillBlock("Left", 120, 0,120,64,2);
-    fillBlock("Right", 240, 0,120,64,2);
-    fillBlock("Both", 360, 0,120,64,2);
-    background(0,64,toRGB565(0xcc,0xcc,0xcc));
-    fillBlock("Mode:", 0, 64,120,64,2);
-    fillBlock("Still", 120, 64,120,64,2);
-    fillBlock("Grad", 240, 64,120,64,2);
-    fillBlock("Shift", 360, 64,120,64,2);
+    fillBlock("Left", 120, 0,120,53,2);
+    fillBlock("Right", 240, 0,120,53,2);
+    fillBlock("Both", 360, 0,120,53,2);
+    background(0,53,toRGB565(0xcc,0xcc,0xcc));
+    fillBlock("Mode:", 0, 53,120,53,2);
+    fillBlock("Still", 120, 53,120,53,2);
+    fillBlock("Grad", 240, 53,120,53,2);
+    fillBlock("Shift", 360, 53,120,53,2);
     background(0,128,toRGB565(0xcc,0xcc,0xcc));
-    fillBlock("Color:", 0, 128,120,64,2);
-    fillBlock("Left", 120, 128,120,64,2);
-    fillBlock("Right", 240, 128,120,64,2);
-    fillBlock("Copy", 360, 128,120,64,2);
+    fillBlock("Color:", 0, 128,120,53,2);
+    fillBlock("Left", 120, 128,120,53,2);
+    fillBlock("Right", 240, 128,120,53,2);
+    fillBlock("Copy", 360, 128,120,53,2);
     background(0,192,toRGB565(0xcc,0xcc,0xcc));
-    fillBlock("Mode:", 0, 192,120,64,2);
-    fillBlock("Still", 120, 192,120,64,2);
-    fillBlock("Grad", 240, 192,120,64,2);
-    fillBlock("Shift", 360, 192,120,64,2);
+    fillBlock("Mode:", 0, 192,120,53,2);
+    fillBlock("Still", 120, 192,120,53,2);
+    fillBlock("Grad", 240, 192,120,53,2);
+    fillBlock("Shift", 360, 192,120,53,2);
     //lcd
     unsigned char *parlcd_mem_base;
     parlcd_mem_base = map_phys_address(PARLCD_REG_BASE_PHYS, PARLCD_REG_SIZE, 0);
@@ -213,8 +219,8 @@ int main(int argc, char *argv[])
   int  changetime = 1000000;
   bool reverse = false, lefton = true, righton = true;
   int blinktime = 100000, fadetime = 100000, shift = 50000;
-  int columnCounter = 1;
-  int rowCounter = 0;
+  int currentColumn = 1, prevColumn = 1;
+  int currentRow = 1, prevRow = 1;
   while (1)
   {
     
@@ -225,44 +231,138 @@ int main(int argc, char *argv[])
     bb = (rgb_knobs_value>>24) & 1;    // blue button
     gb = (rgb_knobs_value>>25) & 1;    // green button
     rb = (rgb_knobs_value>>26) & 1;    // red buttom
-    
-
-    if(rb && (clock()-clockCounter>=200000)){
-      if(columnCounter>3){
-         columnCounter = columnCounter - 3;
+    if(rb && (clock()-clockCounter>=150000)){
+      prevColumn = currentColumn;
+      prevRow = currentRow;
+      switch (mode)
+      {
+      case 1:
+        if (currentRow == 6) break;
+        if (currentRow == 3) 
+        {
+          if (!isTogether) currentColumn = currentColumn == 1 ? 3 : 1;
+        }
+        currentColumn = currentColumn == 3 ? 1 : currentColumn+1;
+        break;
+      case 2:
+        if (currentRow == 6) break;
+        if (currentRow == 3 && isTogether) currentColumn = currentColumn == 1 ? 3 : 1;
+        currentColumn = currentColumn == 3 ? 1 : currentColumn+1;
+        break;
+      case 3:
+        if (currentRow == 6) break;
+        if (currentRow == 3) 
+        {
+          if (!isTogether) currentColumn = currentColumn == 1 ? 3 : 1;
+        }
+        currentColumn = currentColumn == 3 ? 1 : currentColumn+1;
+        break;
       }
-      if(columnCounter>=2){
-        chosenBorder(120*(columnCounter-1),64*rowCounter,0xffff);
+      setfocus(currentColumn, currentRow, prevColumn, prevRow);
+      clockCounter = clock();
+    }
+    if(gb && (clock()-clockCounter>=150000)){
+      prevColumn = currentColumn;
+      prevRow = currentRow;
+      switch (mode)
+      {
+      case 1:
+        switch (currentRow)
+        {
+        case 2:
+          currentColumn = (currentColumn == 3 && !isTogether) ? 3 : 1;
+          currentRow++;
+          break;
+        case 3:
+          currentRow = 6;
+          currentColumn = 3;
+        break;
+        case 6:
+          currentRow = 1;
+        break;
+        default:
+          currentRow++;
+          break;
+        }
+        break;
+      case 2:
+        switch (currentRow)
+        {
+        case 2:
+          currentColumn = (currentColumn == 3 && !isTogether) ? 3 : 2;
+          currentRow++;
+          break;
+        case 4:
+          currentRow = 6;
+          currentColumn = 3;
+        break;
+        case 6:
+          currentRow = 1;
+        break;
+        default:
+          currentRow++;
+          break;
+        }
+        break;
+      case 3:
+        switch (currentRow)
+        {
+        case 2:
+          currentColumn = (currentColumn == 3 && !isTogether) ? 3 : 1;
+          currentRow++;
+          break;
+        case 5:
+          currentRow = 3;
+          currentColumn = 6;
+        break;
+        case 6:
+          currentRow = 1;
+        break;
+        default:
+          currentRow++;
+          break;
+        }
+        break;
       }
-      if(columnCounter==1){
-        chosenBorder(120*(3),64*rowCounter,0xffff);
-      }
+      setfocus(currentColumn, currentRow, prevColumn, prevRow);
+      clockCounter = clock();
+    }
+    // if(rb && (clock()-clockCounter>=200000)){
+    //   if(columnCounter>3){
+    //      columnCounter = columnCounter - 3;
+    //   }
+    //   if(columnCounter>=2){
+    //     chosenBorder(120*(columnCounter-1),64*rowCounter,0xffff);
+    //   }
+    //   if(columnCounter==1){
+    //     chosenBorder(120*(3),64*rowCounter,0xffff);
+    //   }
       
-      chosenBorder(120*columnCounter,64*rowCounter,0x07E0);
-      clockCounter = clock();
-      columnCounter++;
+    //   chosenBorder(120*columnCounter,64*rowCounter,0x07E0);
+    //   clockCounter = clock();
+    //   columnCounter++;
 
-    }
-    if(gb && (clock()-clockCounter>=200000)){
-      clockCounter = clock();
-      rowCounter++;
-      if(columnCounter>1){
-      chosenBorder(120*(columnCounter-1),64*rowCounter,0x07E0);
-      chosenBorder(120*(columnCounter-1),64*(rowCounter-1),0xffff);
-      }
-      else{
-        chosenBorder(120*(columnCounter),64*rowCounter,0x07E0);
-        chosenBorder(120*columnCounter,64*(rowCounter-1),0xffff);
+    // }
+    // if(gb && (clock()-clockCounter>=200000)){
+    //   clockCounter = clock();
+    //   rowCounter++;
+    //   if(columnCounter>1){
+    //   chosenBorder(120*(columnCounter-1),64*rowCounter,0x07E0);
+    //   chosenBorder(120*(columnCounter-1),64*(rowCounter-1),0xffff);
+    //   }
+    //   else{
+    //     chosenBorder(120*(columnCounter),64*rowCounter,0x07E0);
+    //     chosenBorder(120*columnCounter,64*(rowCounter-1),0xffff);
 
-      }
+    //   }
 
 
-    }
-    if(bb){
-      background(240,64,0x7BE0);
-      chosenBorder(240,64,0x07E0);
+    // }
+    // if(bb){
+    //   background(240,64,0x7BE0);
+    //   chosenBorder(240,64,0x07E0);
 
-    }
+    // }
 
     
 
