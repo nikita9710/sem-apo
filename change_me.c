@@ -52,9 +52,9 @@ void chosenBorder(int blockX, int blockY, uint16_t color){
   }
   //down border
   for(int downBorder = 0; downBorder < 119; downBorder++){
+  lcdPixels[downBorder+blockX][blockY+49] = color;
   lcdPixels[downBorder+blockX][blockY+50] = color;
   lcdPixels[downBorder+blockX][blockY+51] = color;
-  lcdPixels[downBorder+blockX][blockY+52] = color;
   }
 }
 void boardBorder(){
@@ -256,7 +256,11 @@ int main(int argc, char *argv[])
         break;
       case 2:
         if (currentRow == 6) break;
-        if (currentRow == 3 && isTogether) currentColumn = currentColumn == 1 ? 2 : 1;
+        if (currentRow == 3 && isTogether) 
+        {
+          currentColumn = currentColumn == 1 ? 2 : 1;
+          break;
+        }
         currentColumn = currentColumn == 3 ? 1 : currentColumn+1;
         break;
       case 3:
@@ -300,7 +304,7 @@ int main(int argc, char *argv[])
         switch (currentRow)
         {
         case 2:
-          currentColumn = (currentColumn == 3 && !isTogether) ? 3 : 2;
+          if (currentColumn == 3 && isTogether) currentColumn = 2;
           currentRow++;
           break;
         case 4:
