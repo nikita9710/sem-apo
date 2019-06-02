@@ -161,8 +161,8 @@ int rgbtohex(RGB rgb)
 
 void setfocus(int col, int row, int oldcol, int oldrow)
 {
-  chosenBorder(120*(oldcol),53*(oldrow),0xffff);
-  chosenBorder(120*(col),53*row,0x07E0);
+  chosenBorder(120*(oldcol),53*(oldrow-1),0xffff);
+  chosenBorder(120*(col),53*(row-1),0x07E0);
 }
 
 int main(int argc, char *argv[])
@@ -188,15 +188,15 @@ int main(int argc, char *argv[])
     fillBlock("Grad", 240, 53,120,53,2);
     fillBlock("Shift", 360, 53,120,53,2);
     background(0,128,toRGB565(0xcc,0xcc,0xcc));
-    fillBlock("Color:", 0, 128,120,53,2);
-    fillBlock("Left", 120, 128,120,53,2);
-    fillBlock("Right", 240, 128,120,53,2);
-    fillBlock("Copy", 360, 128,120,53,2);
+    fillBlock("Color:", 0, 106,120,53,2);
+    fillBlock("Left", 120, 106,120,53,2);
+    fillBlock("Right", 240, 106,120,53,2);
+    fillBlock("Copy", 360, 106,120,53,2);
     background(0,192,toRGB565(0xcc,0xcc,0xcc));
-    fillBlock("Mode:", 0, 192,120,53,2);
-    fillBlock("Still", 120, 192,120,53,2);
-    fillBlock("Grad", 240, 192,120,53,2);
-    fillBlock("Shift", 360, 192,120,53,2);
+    fillBlock("Mode:", 0, 159,120,53,2);
+    fillBlock("Still", 120, 159,120,53,2);
+    fillBlock("Grad", 240, 159,120,53,2);
+    fillBlock("Shift", 360, 159,120,53,2);
     //lcd
     unsigned char *parlcd_mem_base;
     parlcd_mem_base = map_phys_address(PARLCD_REG_BASE_PHYS, PARLCD_REG_SIZE, 0);
