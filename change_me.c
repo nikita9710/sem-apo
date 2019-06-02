@@ -162,21 +162,12 @@ int main(int argc, char *argv[])
     fillBlock("Blink", 360, 53,120,53,2);
     background(0,106,0xD6DA, 120);
     fillBlock("Color:", 0, 106,120,53,2);
-    fillBlock("Left", 120, 106,120,53,2);
-    fillBlock("Right", 240, 106,120,53,2);
+    fillBlock("Use knobs", 120, 106,240,53,2);
     fillBlock("Copy", 360, 106,120,53,2);
-    background(0,159,0xD6DA, 120);
-    fillBlock("Setup:", 0, 159,120,53,2);
-    fillBlock("Time on", 120, 159,120,53,2);
-    fillBlock("Time off", 240, 159,120,53,2);
-    fillBlock("Shift", 360, 159,120,53,2);
-    background(0,212,0xD6DA, 120);
-    fillBlock("Time on", 0, 212,120,53,2);
-    fillBlock("1,0", 120, 212,120,53,2);
-    fillBlock("+0,5", 240, 212,120,53,2);
-    fillBlock("-0,5", 360, 212,120,53,2);
+    fillBlock("Font", 360, 265,120,53,2);
+    background(0,159,0xD6DA,480);
+    background(0,212,0xD6DA,480);
     background(0,265,0xD6DA, 360);
-    fillBlock("Font", 360, 266,120,53,2);
     //lcd
     unsigned char *parlcd_mem_base;
     parlcd_mem_base = map_phys_address(PARLCD_REG_BASE_PHYS, PARLCD_REG_SIZE, 0);
@@ -323,25 +314,22 @@ int main(int argc, char *argv[])
         {
         case 1:
           mode = 1;
-          background(120,106,0xffff,360);
-          background(120,159,0xD6DA,360);
-          background(120,212,0xD6DA,360);
-          background(0,106,0xD6DA, 120);
-          fillBlock("Color:", 0, 106,240,53,2);
+          background(0,106,0xffff,480);
+          background(0,159,0xD6DA,480);
+          background(0,212,0xD6DA,480);
+          background(120,106,0xffff, 240);
           fillBlock("Use knobs", 120, 106,240,53,2);
-          if (isTogether) fillBlock("Copy", 360, 106,120,53,2);
+          if (!isTogether) fillBlock("Copy", 360, 106,120,53,2);
           else background(360,106,0xD6DA, 120);
           break;
         case 2:
           mode = 2;
-          background(120,106,0xffff,360);
-          background(120,159,0xffff,360);
-          background(120,212,0xD6DA,360);
-          background(0,106,0xD6DA, 120);
-          fillBlock("Color:", 0, 106,120,53,2);
+          background(0,106,0xffff,480);
+          background(0,159,0xffff,480);
+          background(0,212,0xD6DA,480);
           fillBlock("Color 1", 120, 106,120,53,2);
           fillBlock("Color 2", 240, 106,120,53,2);
-          if (isTogether) fillBlock("Copy", 360, 106,120,53,2);
+          if (!isTogether) fillBlock("Copy", 360, 106,120,53,2);
           else background(360,106,0xD6DA, 120);
           background(0,159,0xD6DA, 120);
           fillBlock("Duration", 0, 159,120,53,2);
@@ -351,13 +339,12 @@ int main(int argc, char *argv[])
           break;
         case 3:
           mode = 3;
-          background(120,106,0xffff,360);
-          background(120,159,0xffff,360);
-          background(120,212,0xffff,360);
-          background(0,106,0xD6DA, 120);
-          fillBlock("Color:", 0, 106,240,53,2);
+          background(0,106,0xffff,480);
+          background(0,159,0xffff,480);
+          background(0,212,0xffff,480);
+          background(120,106,0xffff, 240);
           fillBlock("Use knobs", 120, 106,240,53,2);
-          if (isTogether) fillBlock("Copy", 360, 106,120,53,2);
+          if (!isTogether) fillBlock("Copy", 360, 106,120,53,2);
           else background(360,106,0xD6DA, 120);
           background(0,159,0xD6DA, 120);
           fillBlock("Setup:", 0, 159,120,53,2);
@@ -366,7 +353,7 @@ int main(int argc, char *argv[])
           fillBlock("Shift", 360, 159,120,53,2);
           background(0,212,0xD6DA, 120);
           fillBlock("Time on", 0, 212,120,53,2);
-          fillBlock("1,0", 120, 212,120,53,2);
+          fillBlock("2,0", 120, 212,120,53,2);
           fillBlock("+0,5", 240, 212,120,53,2);
           fillBlock("-0,5", 360, 212,120,53,2);
           break;
