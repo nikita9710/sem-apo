@@ -138,6 +138,40 @@ void setfocus(int col, int row, int oldcol, int oldrow, bool isDoubled, bool isP
   chosenBorder(120*(col),53*(row-1),0x07E0, isDoubled);
 }
 
+void updateLED(RGB* leftcolor, RGB* rightcolor,  RGB* leftnew, RGB* rightnew, int mode, bool isLeft)
+{
+      if (mode == 2)
+      {
+          if (isLeft)
+          {
+            background(120,106,toRGB565(leftcolor->r, leftcolor->g, leftcolor->b), 120);
+            fillBlock("Color 1", 120, 106,120,53,2);
+            background(240,106,toRGB565(leftnew->r, leftnew->g, leftnew->b), 120);
+            fillBlock("Color 2", 240, 106,120,53,2);
+          }
+          else
+          {
+            background(120,106,toRGB565(rightcolor->r, rightcolor->g, rightcolor->b), 120);
+            fillBlock("Color 1", 120, 106,120,53,2);
+            background(240,106,toRGB565(rightnew->r, rightnew->g, rightnew->b), 120);
+            fillBlock("Color 2", 240, 106,120,53,2);
+          }
+      }
+      else
+      {
+          if (isLeft)
+          {
+            background(120,106,toRGB565(leftcolor->r, leftcolor->g, leftcolor->b), 240);
+            fillBlock("Use knobs", 120, 106,240,53,2);
+          }
+          else
+          {
+            background(120,106,toRGB565(rightcolor->r, rightcolor->g, rightcolor->b), 240);
+            fillBlock("Use knobs", 120, 106,240,53,2);
+          }
+      }
+}
+
 int main(int argc, char *argv[])
 { 
   unsigned char *mem_base;
@@ -187,8 +221,9 @@ int main(int argc, char *argv[])
   clock_t difference = clock() - before;  
   clock_t differencer = clock() - beforer; 
   bool isTogether = false, isLeft = true, changed = true, isFirst = true;
-  RGB leftcolor = {0, 255, 0}, rightcolor = {255, 0, 0}, leftnew = {0,0,255}, rightnew = {255,255,255};
-  int leftcolorhsv = 0xaa11, rightcolorhsv  = 0xbbbb, mode = 1; //1 - still, 2 - gradient, 3 - blinkink
+  RGB leftcolor = {0, 255, 0}, rightcolor = {255, 0, 0}, leftnew = {0,0,255}, rightnew = {255,255,255}, t, gradleft = {0,0,255}, gradright = {0,0,255}, gradleftnew = {0,0,255}, gradrightnew = {0,0,255};
+  int rprev = 0, gprev = 0, bprev = 0;
+  int  mode = 2; //1 - still, 2 - gradient, 3 - blinkink
   int  changetime = 1000000;
   bool lefton = true, righton = true;
   int blinktime = 100000, fadetime = 100000, shift = 50000;
@@ -204,6 +239,43 @@ int main(int argc, char *argv[])
     bb = (rgb_knobs_value>>24) & 1;    // blue button
     gb = (rgb_knobs_value>>25) & 1;    // green button
     rb = (rgb_knobs_value>>26) & 1;    // red buttom
+    if (rprev != rk || gprev != gk || bprev != bk)
+    {
+      rprev = rk;
+      gprev = gk;
+      bprev = bk;
+      if (isLeft)
+      {
+        if (mode == 2 && !isFirst)
+        {
+        leftnew.r = rk;
+        leftnew.g = gk;
+        leftnew.b = bk;
+        }
+        else
+        {
+        leftcolor.r = rk;
+        leftcolor.g = gk;
+        leftcolor.b = bk;
+        }
+      }
+      else
+      {
+        if (mode == 2 && !isFirst)
+        {
+        rightnew.r = rk;
+        rightnew.g = gk;
+        rightnew.b = bk;
+        }
+        else
+        {
+        rightcolor.r = rk;
+        rightcolor.g = gk;
+        rightcolor.b = bk;
+        }
+      }
+      updateLED(&leftcolor, &rightcolor, &leftnew, &rightnew, mode, isLeft);
+    }
     if(rb && (clock()-clockCounter>=150000)){
       prevColumn = currentColumn;
       prevRow = currentRow;
@@ -264,6 +336,10 @@ int main(int argc, char *argv[])
             currentColumn = 3;
           }
         break;
+        case 3:
+          currentRow = 6;
+          currentColumn = 3;
+          break;
         case 6:
           currentRow = 1;
         break;
@@ -348,6 +424,8 @@ int main(int argc, char *argv[])
           fillBlock("Left", 120, 0,120,53,2);
           fillBlock("Right", 240, 0,120,53,2);
           fillBlock("Both", 360, 0,120,53,2);
+          background(360,106,0xffff, 120);
+          fillBlock("Copy", 360, 106,120,53,2);
           break;
         case 2:
           if (isLeft || isTogether) changed = true;
@@ -359,6 +437,8 @@ int main(int argc, char *argv[])
           fillBlock("Left", 120, 0,120,53,2);
           fillBlock("Right", 240, 0,120,53,2);
           fillBlock("Both", 360, 0,120,53,2);
+          background(360,106,0xffff, 120);
+          fillBlock("Copy", 360, 106,120,53,2);
           break;
         case 3:
           if (!isTogether) changed = true;
@@ -369,6 +449,7 @@ int main(int argc, char *argv[])
           fillBlock("Left", 120, 0,120,53,2);
           fillBlock("Right", 240, 0,120,53,2);
           fillBlock("Both", 360, 0,120,53,2);
+          background(360,106,0xD6DA, 120);
           break;
         }
         break;
@@ -444,8 +525,52 @@ int main(int argc, char *argv[])
       case 3:
         if (mode == 2)
         {
-
-
+            changed = true;
+            switch (currentColumn)
+            {
+              case 1:
+                isFirst = true;
+              break;
+              case 2:
+                isFirst = false;
+              break;
+              case 3:
+                if (isLeft)
+                {
+                  leftcolor.r = rightcolor.r;
+                  leftcolor.g = rightcolor.g;
+                  leftcolor.b = rightcolor.b;
+                  leftnew.r = rightnew.r;
+                  leftnew.g = rightnew.g;
+                  leftnew.b = rightnew.b;
+                }
+                else
+                {
+                  rightcolor.r = leftcolor.r;
+                  rightcolor.g = leftcolor.g;
+                  rightcolor.b = leftcolor.b;
+                  rightnew.r = leftnew.r;
+                  rightnew.g = leftnew.g;
+                  rightnew.b = leftnew.b;
+                }
+              break;
+            }
+        }
+        else
+        {
+          changed = true;
+          if (isLeft)
+          {
+            leftcolor.r = rightcolor.r;
+            leftcolor.g = rightcolor.g;
+            leftcolor.b = rightcolor.b;
+          }
+                else
+                {
+                  rightcolor.r = leftcolor.r;
+                  rightcolor.g = leftcolor.g;
+                  rightcolor.b = leftcolor.b;
+                }
         }
         break;
       }
@@ -461,8 +586,8 @@ int main(int argc, char *argv[])
     }
     if (mode == 1)
     {
-      *(volatile uint32_t*)(mem_base + SPILED_REG_LED_RGB1_o) = leftcolorhsv;
-      *(volatile uint32_t*)(mem_base + SPILED_REG_LED_RGB2_o) = isTogether ? leftcolorhsv : rightcolorhsv;
+      *(volatile uint32_t*)(mem_base + SPILED_REG_LED_RGB1_o) = rgbtohex(leftcolor);
+      *(volatile uint32_t*)(mem_base + SPILED_REG_LED_RGB2_o) = isTogether ? rgbtohex(leftcolor) : rgbtohex(rightcolor);
     }
     else if (mode == 2)
     {
@@ -471,6 +596,18 @@ int main(int argc, char *argv[])
         before = clock();
         *(volatile uint32_t*)(mem_base + SPILED_REG_LED_RGB1_o) = rgbtohex(leftcolor);
         *(volatile uint32_t*)(mem_base + SPILED_REG_LED_RGB2_o) = isTogether? rgbtohex(leftcolor) : rgbtohex(rightcolor);
+        gradleft.r = leftcolor.r;
+        gradleft.g = leftcolor.g;
+        gradleft.b = leftcolor.b;
+        gradleftnew.r = leftnew.r;
+        gradleftnew.g = leftnew.g;
+        gradleftnew.b = leftnew.b;
+        gradright.r = rightcolor.r;
+        gradright.g = rightcolor.g;
+        gradright.b = rightcolor.b;
+        gradrightnew.r = rightnew.r;
+        gradrightnew.g = rightnew.g;
+        gradrightnew.b = rightnew.b;
         changed = false;
       }
       else
@@ -479,32 +616,32 @@ int main(int argc, char *argv[])
         if (difference >= changetime)
         {
           before = clock();
-          char tempr = leftcolor.r, tempg = leftcolor.g, tempb = leftcolor.b;
-          leftcolor.r = leftnew.r;
-          leftcolor.g = leftnew.g;
-          leftcolor.b = leftnew.b;
-          leftnew.r = tempr;
-          leftnew.g = tempg;
-          leftnew.b = tempb;
-          tempr = rightcolor.r, tempg = rightcolor.g, tempb = rightcolor.b;
-          rightcolor.r = rightnew.r;
-          rightcolor.g = rightnew.g;
-          rightcolor.b = rightnew.b;
-          rightnew.r = tempr;
-          rightnew.g = tempg;
-          rightnew.b = tempb;
+          char tempr = gradleft.r, tempg = gradleft.g, tempb = gradleft.b;
+          gradleft.r = gradleftnew.r;
+          gradleft.g = gradleftnew.g;
+          gradleft.b = gradleftnew.b;
+          gradleftnew.r = tempr;
+          gradleftnew.g = tempg;
+          gradleftnew.b = tempb;
+          tempr = gradright.r, tempg = gradright.g, tempb = gradright.b;
+          gradright.r = gradrightnew.r;
+          gradright.g = gradrightnew.g;
+          gradright.b = gradrightnew.b;
+          gradrightnew.r = tempr;
+          gradrightnew.g = tempg;
+          gradrightnew.b = tempb;
         }
         else
         {
-          RGB t = {leftcolor.r + ((double)difference)/changetime*(signed char)(leftnew.r - leftcolor.r), 
-              leftcolor.g + ((double)difference)/changetime*(leftnew.g - leftcolor.g), 
-              leftcolor.b + ((double)difference)/changetime*(leftnew.b - leftcolor.b)};
+          t.r = gradleft.r + ((double)difference)/changetime*((int)gradleftnew.r - (int)gradleft.r);
+          t.g = gradleft.g + ((double)difference)/changetime*((int)gradleftnew.g - (int)gradleft.g);
+          t.b = gradleft.b + ((double)difference)/changetime*((int)gradleftnew.b - (int)gradleft.b);
             *(volatile uint32_t*)(mem_base + SPILED_REG_LED_RGB1_o) = rgbtohex(t);
             if (!isTogether)
             {
-              t.r = rightcolor.r + ((double)difference)/changetime*(rightnew.r - rightcolor.r);
-              t.g = rightcolor.g + ((double)difference)/changetime*(rightnew.g - rightcolor.g);
-              t.b = rightcolor.b + ((double)difference)/changetime*(rightnew.b - rightcolor.b);
+              t.r = gradright.r + ((double)difference)/changetime*((int)gradrightnew.r - (int)gradright.r);
+              t.g = gradright.g + ((double)difference)/changetime*((int)gradrightnew.g - (int)gradright.g);
+              t.b = gradright.b + ((double)difference)/changetime*((int)gradrightnew.b - (int)gradright.b);
             }
             *(volatile uint32_t*)(mem_base + SPILED_REG_LED_RGB2_o) = rgbtohex(t);
         }
@@ -518,8 +655,8 @@ int main(int argc, char *argv[])
         beforer = clock() - shift;
         lefton = true;
         righton = true;
-        *(volatile uint32_t*)(mem_base + SPILED_REG_LED_RGB1_o) = leftcolorhsv;
-        *(volatile uint32_t*)(mem_base + SPILED_REG_LED_RGB2_o) = isTogether? leftcolorhsv : rightcolorhsv;
+        *(volatile uint32_t*)(mem_base + SPILED_REG_LED_RGB1_o) = rgbtohex(leftcolor);
+        *(volatile uint32_t*)(mem_base + SPILED_REG_LED_RGB2_o) = isTogether? rgbtohex(leftcolor) : rgbtohex(rightcolor);
         changed = false;
       }
       else
@@ -544,10 +681,10 @@ int main(int argc, char *argv[])
         {
           if (difference >= fadetime)
           {
-            *(volatile uint32_t*)(mem_base + SPILED_REG_LED_RGB1_o) = leftcolorhsv;
+            *(volatile uint32_t*)(mem_base + SPILED_REG_LED_RGB1_o) = rgbtohex(leftcolor);
             if (shift == 0) 
             {
-              *(volatile uint32_t*)(mem_base + SPILED_REG_LED_RGB2_o) = isTogether? leftcolorhsv : rightcolorhsv;
+              *(volatile uint32_t*)(mem_base + SPILED_REG_LED_RGB2_o) = isTogether? rgbtohex(leftcolor) : rgbtohex(rightcolor);
               righton = true;
             }
             lefton = true;
@@ -569,7 +706,7 @@ int main(int argc, char *argv[])
             {
               if (differencer >= fadetime)
               {
-                *(volatile uint32_t*)(mem_base + SPILED_REG_LED_RGB2_o) = isTogether? leftcolorhsv : rightcolorhsv;
+                *(volatile uint32_t*)(mem_base + SPILED_REG_LED_RGB2_o) = isTogether? rgbtohex(leftcolor) : rgbtohex(rightcolor);
                 righton = true;
                 beforer = clock();
               }
