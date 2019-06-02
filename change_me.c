@@ -22,11 +22,10 @@ void blockColorChange(int blockX, int blockY, int blockXrange, int blockYrange, 
         }
     }
 };
-void background(int blockX, int blockY,uint16_t color){
-  for(int x = blockX; x < blockX + 120; ++x){
+void background(int blockX, int blockY,uint16_t color, int blockXsize){
+  for(int x = blockX; x < blockX + blockXsize; ++x){
         for(int y = blockY; y < blockY + 53; ++y){
-          if(lcdPixels[x][y] != 0x0){
-            lcdPixels[x][y] = color;}
+            lcdPixels[x][y] = color;
         }
     }
 
@@ -39,13 +38,13 @@ void chosenBorder(int blockX, int blockY, uint16_t color){
   lcdPixels[downBorder+blockX][blockY+3] = color;
   }
   //left border
-  for(int leftBorder = 1; leftBorder < 52; leftBorder++){
+  for(int leftBorder = 0; leftBorder < 52; leftBorder++){
   lcdPixels[blockX+1][leftBorder+blockY] = color;
   lcdPixels[blockX+2][leftBorder+blockY] = color;
   lcdPixels[blockX+3][leftBorder+blockY] = color;
   }
   //right border
-  for(int leftBorder = 1; leftBorder < 52; leftBorder++){
+  for(int leftBorder = 0; leftBorder < 52; leftBorder++){
   lcdPixels[blockX+116][leftBorder+blockY] = color;
   lcdPixels[blockX+117][leftBorder+blockY] = color;
   lcdPixels[blockX+118][leftBorder+blockY] = color;
@@ -56,32 +55,6 @@ void chosenBorder(int blockX, int blockY, uint16_t color){
   lcdPixels[downBorder+blockX][blockY+50] = color;
   lcdPixels[downBorder+blockX][blockY+51] = color;
   }
-}
-void boardBorder(){
-    //down border
-    for(int downBorder = 0; downBorder < 480; downBorder++){
-        lcdPixels[downBorder][319] = 0xF800;
-	      lcdPixels[downBorder][318] = 0xF800;
-	      lcdPixels[downBorder][317] = 0xF800;
-    }
-    //left border
-    for(int leftBorder = 0; leftBorder < 320; leftBorder++){
-        lcdPixels[0][leftBorder] = 0xF800;
-	    lcdPixels[1][leftBorder] = 0xF800;
-	    lcdPixels[2][leftBorder] = 0xF800;
-    }
-    //right border
-    for(int leftBorder = 0; leftBorder < 320; leftBorder++){
-        lcdPixels[479][leftBorder] = 0xF800;
-	      lcdPixels[478][leftBorder] = 0xF800;
-	      lcdPixels[477][leftBorder] = 0xF800;
-    }
-    //up border
-    for(int downBorder = 0; downBorder < 480; downBorder++){
-        lcdPixels[downBorder][0] = 0xF800;
-	      lcdPixels[downBorder][1] = 0xF800;
-	      lcdPixels[downBorder][2] = 0xF800;
-    }
 }
 
 //Fill the bord with a word
@@ -177,34 +150,32 @@ int main(int argc, char *argv[])
     
     //Fill the  Blocks for two lines
     
+    background(0,0,0xD6DA, 120);
     fillBlock("LED:", 0, 0,120,53,2);
-    background(0,0,toRGB565(0xcc,0xcc,0xcc));
     fillBlock("Left", 120, 0,120,53,2);
     fillBlock("Right", 240, 0,120,53,2);
     fillBlock("Both", 360, 0,120,53,2);
-    background(0,53,toRGB565(0xcc,0xcc,0xcc));
+    background(0,53,0xD6DA, 120);
     fillBlock("Mode:", 0, 53,120,53,2);
     fillBlock("Still", 120, 53,120,53,2);
     fillBlock("Gradient", 240, 53,120,53,2);
     fillBlock("Blink", 360, 53,120,53,2);
-    background(0,106,toRGB565(0xcc,0xcc,0xcc));
+    background(0,106,0xD6DA, 120);
     fillBlock("Color:", 0, 106,120,53,2);
     fillBlock("Left", 120, 106,120,53,2);
     fillBlock("Right", 240, 106,120,53,2);
     fillBlock("Copy", 360, 106,120,53,2);
-    background(0,159,toRGB565(0xcc,0xcc,0xcc));
+    background(0,159,0xD6DA, 120);
     fillBlock("Setup:", 0, 159,120,53,2);
     fillBlock("Time on", 120, 159,120,53,2);
     fillBlock("Time off", 240, 159,120,53,2);
     fillBlock("Shift", 360, 159,120,53,2);
-    background(0,212,toRGB565(0xcc,0xcc,0xcc));
+    background(0,212,0xD6DA, 120);
     fillBlock("Time on", 0, 212,120,53,2);
     fillBlock("1,0", 120, 212,120,53,2);
     fillBlock("+0,5", 240, 212,120,53,2);
     fillBlock("-0,5", 360, 212,120,53,2);
-    background(0,265,toRGB565(0xcc,0xcc,0xcc));
-    background(120,265,toRGB565(0xcc,0xcc,0xcc));
-    background(240,265,toRGB565(0xcc,0xcc,0xcc));
+    background(0,265,0xD6DA, 360);
     fillBlock("Font", 360, 266,120,53,2);
     //lcd
     unsigned char *parlcd_mem_base;
@@ -232,7 +203,6 @@ int main(int argc, char *argv[])
   int currentRow = 1, prevRow = 1;
   while (1)
   {
-    
     rgb_knobs_value = *(volatile uint32_t*)(mem_base + SPILED_REG_KNOBS_8BIT_o);
     bk =  rgb_knobs_value      & 0xFF; // blue knob position
     gk = (rgb_knobs_value>>8)  & 0xFF; // green knob position
@@ -341,6 +311,70 @@ int main(int argc, char *argv[])
       }
       setfocus(currentColumn, currentRow, prevColumn, prevRow);
       clockCounter = clock();
+    }
+    if(bb && (clock()-clockCounter>=150000)){
+      switch (currentRow)
+      {
+      case 1:
+        
+        break;
+      case 2:
+        switch (currentColumn)
+        {
+        case 1:
+          mode = 1;
+          background(120,106,0xffff,360);
+          background(120,159,0xD6DA,360);
+          background(120,212,0xD6DA,360);
+          background(0,106,0xD6DA, 120);
+          fillBlock("Color:", 0, 106,240,53,2);
+          fillBlock("Use knobs", 120, 106,240,53,2);
+          if (isTogether) fillBlock("Copy", 360, 106,120,53,2);
+          else background(360,106,0xD6DA, 120);
+          break;
+        case 2:
+          mode = 2;
+          background(120,106,0xffff,360);
+          background(120,159,0xffff,360);
+          background(120,212,0xD6DA,360);
+          background(0,106,0xD6DA, 120);
+          fillBlock("Color:", 0, 106,120,53,2);
+          fillBlock("Color 1", 120, 106,120,53,2);
+          fillBlock("Color 2", 240, 106,120,53,2);
+          if (isTogether) fillBlock("Copy", 360, 106,120,53,2);
+          else background(360,106,0xD6DA, 120);
+          background(0,159,0xD6DA, 120);
+          fillBlock("Duration", 0, 159,120,53,2);
+          fillBlock("5,0", 120, 159,120,53,2);
+          fillBlock("+0,5", 240, 159,120,53,2);
+          fillBlock("-0,5", 360, 159,120,53,2);
+          break;
+        case 3:
+          mode = 3;
+          background(120,106,0xffff,360);
+          background(120,159,0xffff,360);
+          background(120,212,0xffff,360);
+          background(0,106,0xD6DA, 120);
+          fillBlock("Color:", 0, 106,240,53,2);
+          fillBlock("Use knobs", 120, 106,240,53,2);
+          if (isTogether) fillBlock("Copy", 360, 106,120,53,2);
+          else background(360,106,0xD6DA, 120);
+          background(0,159,0xD6DA, 120);
+          fillBlock("Setup:", 0, 159,120,53,2);
+          fillBlock("Time on", 120, 159,120,53,2);
+          fillBlock("Time off", 240, 159,120,53,2);
+          fillBlock("Shift", 360, 159,120,53,2);
+          background(0,212,0xD6DA, 120);
+          fillBlock("Time on", 0, 212,120,53,2);
+          fillBlock("1,0", 120, 212,120,53,2);
+          fillBlock("+0,5", 240, 212,120,53,2);
+          fillBlock("-0,5", 360, 212,120,53,2);
+          break;
+        }
+        break;
+      default:
+        break;
+      }
     }
     // if(rb && (clock()-clockCounter>=200000)){
     //   if(columnCounter>3){
