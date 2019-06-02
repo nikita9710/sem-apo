@@ -134,8 +134,8 @@ int rgbtohex(RGB rgb)
 
 void setfocus(int col, int row, int oldcol, int oldrow, bool isDoubled, bool isPrevDoubled)
 {
-  chosenBorder(120*(oldcol),53*(oldrow-1),0xffff, isDoubled);
-  chosenBorder(120*(col),53*(row-1),0x07E0, isPrevDoubled);
+  chosenBorder(120*(oldcol),53*(oldrow-1),0xffff, isPrevDoubled);
+  chosenBorder(120*(col),53*(row-1),0x07E0, isDoubled);
 }
 
 int main(int argc, char *argv[])
@@ -151,11 +151,13 @@ int main(int argc, char *argv[])
     //Fill the  Blocks for two lines
     
     background(0,0,0xD6DA, 120);
+    background(120,0,0xA6D5,120);
     fillBlock("LED:", 0, 0,120,53,2);
     fillBlock("Left", 120, 0,120,53,2);
     fillBlock("Right", 240, 0,120,53,2);
     fillBlock("Both", 360, 0,120,53,2);
     background(0,53,0xD6DA, 120);
+    background(120,53,0xA6D5,120);
     fillBlock("Mode:", 0, 53,120,53,2);
     fillBlock("Still", 120, 53,120,53,2);
     fillBlock("Gradient", 240, 53,120,53,2);
@@ -184,7 +186,7 @@ int main(int argc, char *argv[])
   clock_t clockCounter = clock();
   clock_t difference = clock() - before;  
   clock_t differencer = clock() - beforer; 
-  bool isLeft = false, isRight = false, isTogether = false, changed = true;
+  bool isLeft = false, isRight = false, isTogether = false, isLeft = true, changed = true;
   RGB leftcolor = {0, 255, 0}, rightcolor = {255, 0, 0}, leftnew = {0,0,255}, rightnew = {255,255,255};
   int leftcolorhsv = 0xaa11, rightcolorhsv  = 0xbbbb, mode = 1; //1 - still, 2 - gradient, 3 - blinkkink
   int  changetime = 1000000;
@@ -223,6 +225,11 @@ int main(int argc, char *argv[])
           currentColumn = currentColumn == 1 ? 2 : 1;
           break;
         }
+        if (currentRow == 4)
+        {
+          currentColumn = currentColumn == 3 ? 2 : 3;
+          break;
+        }
         currentColumn = currentColumn == 3 ? 1 : currentColumn+1;
         break;
       case 3:
@@ -232,12 +239,17 @@ int main(int argc, char *argv[])
           if (!isTogether) currentColumn = currentColumn == 1 ? 3 : 1;
           break;
         }
+        if (currentRow == 5)
+        {
+          currentColumn = currentColumn == 3 ? 2 : 3;
+          break;
+        }
         currentColumn = currentColumn == 3 ? 1 : currentColumn+1;
         break;
       }
-      if (currentColumn == 3 && mode != 2)setfocus(currentColumn, currentRow, prevColumn, prevRow, true, false);
-      else etfocus(currentColumn, currentRow, prevColumn, prevRow, false, true);
-      setfocus(currentColumn, currentRow, prevColumn, prevRow, false, false);
+      if (currentRow == 3 && currentColumn == 1 && mode != 2)setfocus(currentColumn, currentRow, prevColumn, prevRow, true, false);
+      else if (prevRow == 3 && prevColumn == 1 && mode != 2) setfocus(currentColumn, currentRow, prevColumn, prevRow, false, true);
+      else setfocus(currentColumn, currentRow, prevColumn, prevRow, false, false);
       clockCounter = clock();
     }
     if(gb && (clock()-clockCounter>=150000)){
@@ -271,6 +283,10 @@ int main(int argc, char *argv[])
           if (currentColumn == 3 && isTogether) currentColumn = 2;
           currentRow++;
           break;
+        case 3:
+          if (currentColumn == 1) currentColumn = 2;
+          currentRow++;
+          break;
         case 4:
           currentRow = 6;
           currentColumn = 3;
@@ -290,6 +306,10 @@ int main(int argc, char *argv[])
           currentColumn = (currentColumn == 3 && !isTogether) ? 3 : 1;
           currentRow++;
           break;
+        case 4:
+          if (currentColumn == 1) currentColumn = 2;
+          currentRow++;
+          break;
         case 5:
           currentRow = 6;
           currentColumn = 3;
@@ -303,20 +323,64 @@ int main(int argc, char *argv[])
         }
         break;
       }
-      setfocus(currentColumn, currentRow, prevColumn, prevRow, false, false);
+      if (currentRow == 3 && currentColumn == 1 && mode != 2)setfocus(currentColumn, currentRow, prevColumn, prevRow, true, false);
+      else if (prevRow == 3 && prevColumn == 1 && mode != 2) setfocus(currentColumn, currentRow, prevColumn, prevRow, false, true);
+      else setfocus(currentColumn, currentRow, prevColumn, prevRow, false, false);
       clockCounter = clock();
     }
     if(bb && (clock()-clockCounter>=150000)){
       switch (currentRow)
       {
       case 1:
-        
+        changed = true;
+        switch (currentColumn)
+        {
+        case 1:
+          if (!isLeft || isTogether) changed = true;
+          isLeft = true;
+          isTogether = false;
+          background(120,0,0xA6D5,120);
+          background(240,0,0xffff,120);
+          background(360,0,0xffff,120);
+          fillBlock("Left", 120, 0,120,53,2);
+          fillBlock("Right", 240, 0,120,53,2);
+          fillBlock("Both", 360, 0,120,53,2);
+          break;
+        case 2:
+          if (isLeft || isTogether) changed = true;
+          isLeft = false;
+          isTogether = false;
+          background(120,0,0xffff,120);
+          background(240,0,0xA6D5,120);
+          background(360,0,0xffff,120);
+          fillBlock("Left", 120, 0,120,53,2);
+          fillBlock("Right", 240, 0,120,53,2);
+          fillBlock("Both", 360, 0,120,53,2);
+          break;
+        case 3:
+          if (!isTogether) changed = true;
+          isTogether = true;
+          background(120,0,0xffff,120);
+          background(240,0,0xffff,120);
+          background(360,0,0xA6D5,120);
+          fillBlock("Left", 120, 0,120,53,2);
+          fillBlock("Right", 240, 0,120,53,2);
+          fillBlock("Both", 360, 0,120,53,2);
+          break;
+        }
         break;
       case 2:
+        changed = true;
         switch (currentColumn)
         {
         case 1:
           mode = 1;
+          background(120,0,0xA6D5,120);
+          background(240,0,0xffff,120);
+          background(360,0,0xffff,120);
+          fillBlock("Still", 120, 53,120,53,2);
+          fillBlock("Gradient", 240, 53,120,53,2);
+          fillBlock("Blink", 360, 53,120,53,2);
           background(120,106,0xffff,360);
           background(0,159,0xD6DA,480);
           background(0,212,0xD6DA,480);
@@ -326,6 +390,12 @@ int main(int argc, char *argv[])
           break;
         case 2:
           mode = 2;
+          background(120,0,0xffff,120);
+          background(240,0,0xA6D5,120);
+          background(360,0,0xffff,120);
+          fillBlock("Still", 120, 53,120,53,2);
+          fillBlock("Gradient", 240, 53,120,53,2);
+          fillBlock("Blink", 360, 53,120,53,2);
           background(120,106,0xffff,360);
           background(0,159,0xffff,480);
           background(0,212,0xD6DA,480);
@@ -335,12 +405,18 @@ int main(int argc, char *argv[])
           else background(360,106,0xD6DA, 120);
           background(0,159,0xD6DA, 120);
           fillBlock("Duration", 0, 159,120,53,2);
-          fillBlock("5,0", 120, 159,120,53,2);
+          fillBlock("5,0", 120, 159,120,53,2); ////hbvkvlugvguvugffgluyg
           fillBlock("+0,5", 240, 159,120,53,2);
           fillBlock("-0,5", 360, 159,120,53,2);
           break;
         case 3:
           mode = 3;
+          background(120,0,0xffff,120);
+          background(240,0,0xA6D5,120);
+          background(360,0,0xffff,120);
+          fillBlock("Still", 120, 53,120,53,2);
+          fillBlock("Gradient", 240, 53,120,53,2);
+          fillBlock("Blink", 360, 53,120,53,2);
           background(120,106,0xffff,360);
           background(0,159,0xffff,480);
           background(0,212,0xffff,480);
@@ -354,7 +430,7 @@ int main(int argc, char *argv[])
           fillBlock("Shift", 360, 159,120,53,2);
           background(0,212,0xD6DA, 120);
           fillBlock("Time on", 0, 212,120,53,2);
-          fillBlock("2,0", 120, 212,120,53,2);
+          fillBlock("2,0", 120, 212,120,53,2);////hbvkvlugvguvugffgluyg
           fillBlock("+0,5", 240, 212,120,53,2);
           fillBlock("-0,5", 360, 212,120,53,2);
           break;
@@ -481,6 +557,7 @@ int main(int argc, char *argv[])
         righton = true;
         *(volatile uint32_t*)(mem_base + SPILED_REG_LED_RGB1_o) = leftcolorhsv;
         *(volatile uint32_t*)(mem_base + SPILED_REG_LED_RGB2_o) = isTogether? leftcolorhsv : rightcolorhsv;
+    changed = false;
       }
       else
       {
@@ -537,7 +614,6 @@ int main(int argc, char *argv[])
         }
       }
     }
-    changed = false;
   }
   
 
