@@ -104,6 +104,11 @@ void fillBlock(char* str, int blockX, int blockY, int size){
 
 int main(int argc, char *argv[])
 { 
+  unsigned char *mem_base;
+
+  mem_base = map_phys_address(SPILED_REG_BASE_PHYS, SPILED_REG_SIZE, 0);
+
+  if (mem_base == NULL) exit(1);
     //color whole background
     blockColorChange(0,0,480,320, 0xFFFF);
     
@@ -128,7 +133,6 @@ int main(int argc, char *argv[])
 		for (int y = 0; y < 480; ++y) {
 			parlcd_write_data(parlcd_mem_base, lcdPixels[y][x]);
 		}
-	}
 
     // int row, columns;
     // for (int row=0; row<320; row++)
@@ -141,10 +145,10 @@ int main(int argc, char *argv[])
     // }
 
 
-//   uint32_t rgb_knobs_value;
-//   int rk, gk, bk,rb, gb, bb;
-//   clock_t before = clock();
-//   clock_t difference = clock() - before;  
+  uint32_t rgb_knobs_value;
+  int rk, gk, bk,rb, gb, bb;
+  clock_t before = clock();
+  clock_t difference = clock() - before;  
   // }
   //fill the block (coordinates of a block and etc)
   //fillBlock(char* str, int  blockX, int  blockY){textCoor = textCornerCoordinate(char*str, )
@@ -157,129 +161,129 @@ int main(int argc, char *argv[])
   //передавать я буду 0 1 2 завимисимости от положения кноба
   //передавать значения лефтколор и блаблрала 
   
-//   while (1)
-//   {
-//     rgb_knobs_value = *(volatile uint32_t*)(mem_base + SPILED_REG_KNOBS_8BIT_o);
-//     bk =  rgb_knobs_value      & 0xFF; // blue knob position
-//     gk = (rgb_knobs_value>>8)  & 0xFF; // green knob position
-//     rk = (rgb_knobs_value>>16) & 0xFF; // red knob position
-//     bb = (rgb_knobs_value>>24) & 1;    // blue button
-//     gb = (rgb_knobs_value>>25) & 1;    // green button
-//     rb = (rgb_knobs_value>>26) & 1;    // red buttom
-
-
-//   bool isTogether = false;
-//   int leftcolor, rightcolor, mode; //0 - still, 1 - gradient, 2 - blinkkink
-//   int leftnew, rightnew, changetime;
-//   int blinktime, faddetime, phase;
-
-  bool isTogether = false, changed = true;
-  int leftcolor, rightcolor, mode; //0 - still, 1 - gradient, 2 - blinkkink
-  int leftnew, rightnew, changetime;
-  bool reverse = false, lefton = true, righton = true;
-  int blinktime, fadetime, shift;
-
-  // if (!changed) continue;
-  if (mode == 1)
+  while (1)
   {
-    *(volatile uint32_t*)(mem_base + SPILED_REG_LED_RGB1_o) = leftcolor;
-    *(volatile uint32_t*)(mem_base + SPILED_REG_LED_RGB2_o) = isTogether? leftcolor : rightcolor;
-  }
-  else if (mode == 2)
-  {
-    if (changed) 
+    rgb_knobs_value = *(volatile uint32_t*)(mem_base + SPILED_REG_KNOBS_8BIT_o);
+    bk =  rgb_knobs_value      & 0xFF; // blue knob position
+    gk = (rgb_knobs_value>>8)  & 0xFF; // green knob position
+    rk = (rgb_knobs_value>>16) & 0xFF; // red knob position
+    bb = (rgb_knobs_value>>24) & 1;    // blue button
+    gb = (rgb_knobs_value>>25) & 1;    // green button
+    rb = (rgb_knobs_value>>26) & 1;    // red buttom
+
+    bool isTogether = false;
+    int leftcolor, rightcolor, mode; //0 - still, 1 - gradient, 2 - blinkkink
+    int leftnew, rightnew, changetime;
+    int blinktime, faddetime, phase;
+
+    bool isTogether = false, changed = true;
+    int leftcolor, rightcolor, mode; //0 - still, 1 - gradient, 2 - blinkkink
+    int leftnew, rightnew, changetime;
+    bool reverse = false, lefton = true, righton = true;
+    int blinktime, fadetime, shift;
+
+    // if (!changed) continue;
+    if (mode == 1)
     {
-      before = clock();
-      reverse = false;
       *(volatile uint32_t*)(mem_base + SPILED_REG_LED_RGB1_o) = leftcolor;
       *(volatile uint32_t*)(mem_base + SPILED_REG_LED_RGB2_o) = isTogether? leftcolor : rightcolor;
     }
-    else
+    else if (mode == 2)
     {
-      difference = clock() - before;
-      if (difference >= changetime)
+      if (changed) 
       {
-        if (reverse)
-        {
-          *(volatile uint32_t*)(mem_base + SPILED_REG_LED_RGB1_o) = leftcolor;
-          *(volatile uint32_t*)(mem_base + SPILED_REG_LED_RGB2_o) = isTogether? leftcolor : rightcolor;
-        }
-        else
-        {
-          *(volatile uint32_t*)(mem_base + SPILED_REG_LED_RGB1_o) = leftnew;
-          *(volatile uint32_t*)(mem_base + SPILED_REG_LED_RGB2_o) = isTogether? leftnew : rightnew;
-        }
-        reverse = !reverse;
         before = clock();
+        reverse = false;
+        *(volatile uint32_t*)(mem_base + SPILED_REG_LED_RGB1_o) = leftcolor;
+        *(volatile uint32_t*)(mem_base + SPILED_REG_LED_RGB2_o) = isTogether? leftcolor : rightcolor;
       }
       else
       {
-        //average colors??????????
-      }
-    }
-  }
-  else
-  {
-    if (changed) 
-    {
-      before = clock();
-      lefton = true;
-      righton = true;
-      *(volatile uint32_t*)(mem_base + SPILED_REG_LED_RGB1_o) = leftcolor;
-      *(volatile uint32_t*)(mem_base + SPILED_REG_LED_RGB2_o) = isTogether? leftcolor : rightcolor;
-    }
-    else
-    {
-      difference = clock() - before;
-      int differencer = clock() - before - shift;
-      if (lefton)
-      {
-        if (difference >= blinktime)
+        difference = clock() - before;
+        if (difference >= changetime)
         {
-          *(volatile uint32_t*)(mem_base + SPILED_REG_LED_RGB1_o) = 0x0;
-          if (shift == 0) 
+          if (reverse)
           {
-            *(volatile uint32_t*)(mem_base + SPILED_REG_LED_RGB2_o) = 0x0;
-            righton = false;
-          }
-          lefton = false;
-          before = clock();
-        }
-      }
-      else
-      {
-        if (difference >= fadetime)
-        {
-          *(volatile uint32_t*)(mem_base + SPILED_REG_LED_RGB1_o) = leftcolor;
-          if (shift == 0) 
-          {
+            *(volatile uint32_t*)(mem_base + SPILED_REG_LED_RGB1_o) = leftcolor;
             *(volatile uint32_t*)(mem_base + SPILED_REG_LED_RGB2_o) = isTogether? leftcolor : rightcolor;
-            righton = true;
-          }
-          lefton = true;
-          before = clock();
-        }
-      }
-      if (shift != 0)
-      {
-          if (righton)
-          {
-            if (differencer >= blinktime)
-            {
-              *(volatile uint32_t*)(mem_base + SPILED_REG_LED_RGB2_o) = 0x0;
-              righton = false;
-              before = clock();
-            }
           }
           else
           {
-            if (differencer >= fadetime)
+            *(volatile uint32_t*)(mem_base + SPILED_REG_LED_RGB1_o) = leftnew;
+            *(volatile uint32_t*)(mem_base + SPILED_REG_LED_RGB2_o) = isTogether? leftnew : rightnew;
+          }
+          reverse = !reverse;
+          before = clock();
+        }
+        else
+        {
+          //average colors??????????
+        }
+      }
+    }
+    else
+    {
+      if (changed) 
+      {
+        before = clock();
+        lefton = true;
+        righton = true;
+        *(volatile uint32_t*)(mem_base + SPILED_REG_LED_RGB1_o) = leftcolor;
+        *(volatile uint32_t*)(mem_base + SPILED_REG_LED_RGB2_o) = isTogether? leftcolor : rightcolor;
+      }
+      else
+      {
+        difference = clock() - before;
+        int differencer = clock() - before - shift;
+        if (lefton)
+        {
+          if (difference >= blinktime)
+          {
+            *(volatile uint32_t*)(mem_base + SPILED_REG_LED_RGB1_o) = 0x0;
+            if (shift == 0) 
+            {
+              *(volatile uint32_t*)(mem_base + SPILED_REG_LED_RGB2_o) = 0x0;
+              righton = false;
+            }
+            lefton = false;
+            before = clock();
+          }
+        }
+        else
+        {
+          if (difference >= fadetime)
+          {
+            *(volatile uint32_t*)(mem_base + SPILED_REG_LED_RGB1_o) = leftcolor;
+            if (shift == 0) 
             {
               *(volatile uint32_t*)(mem_base + SPILED_REG_LED_RGB2_o) = isTogether? leftcolor : rightcolor;
               righton = true;
-              before = clock();
             }
+            lefton = true;
+            before = clock();
           }
+        }
+        if (shift != 0)
+        {
+            if (righton)
+            {
+              if (differencer >= blinktime)
+              {
+                *(volatile uint32_t*)(mem_base + SPILED_REG_LED_RGB2_o) = 0x0;
+                righton = false;
+                before = clock();
+              }
+            }
+            else
+            {
+              if (differencer >= fadetime)
+              {
+                *(volatile uint32_t*)(mem_base + SPILED_REG_LED_RGB2_o) = isTogether? leftcolor : rightcolor;
+                righton = true;
+                before = clock();
+              }
+            }
+        }
       }
     }
   }
@@ -304,7 +308,7 @@ int main(int argc, char *argv[])
     // }
     // usleep(500);
     // // printf("%d %d %d\n", bk, gk, rk);
-//   }
+    //   }
 
 
   return 0;
