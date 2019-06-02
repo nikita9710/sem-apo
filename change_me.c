@@ -52,9 +52,9 @@ void chosenBorder(int blockX, int blockY, uint16_t color){
   }
   //down border
   for(int downBorder = 0; downBorder < 119; downBorder++){
-  lcdPixels[downBorder+blockX][blockY+53] = color;
-  lcdPixels[downBorder+blockX][blockY+54] = color;
-  lcdPixels[downBorder+blockX][blockY+55] = color;
+  lcdPixels[downBorder+blockX][blockY+50] = color;
+  lcdPixels[downBorder+blockX][blockY+51] = color;
+  lcdPixels[downBorder+blockX][blockY+52] = color;
   }
 }
 void boardBorder(){
@@ -197,11 +197,14 @@ int main(int argc, char *argv[])
     fillBlock("Time on", 120, 159,120,53,2);
     fillBlock("Time off", 240, 159,120,53,2);
     fillBlock("Shift", 360, 159,120,53,2);
-    background(0,214,toRGB565(0xcc,0xcc,0xcc));
-    fillBlock("Time on", 0, 214,120,53,2);
-    fillBlock("1,0", 120, 214,120,53,2);
-    fillBlock("+0,5", 240, 214,120,53,2);
-    fillBlock("-0,5", 360, 214,120,53,2);
+    background(0,212,toRGB565(0xcc,0xcc,0xcc));
+    fillBlock("Time on", 0, 212,120,53,2);
+    fillBlock("1,0", 120, 212,120,53,2);
+    fillBlock("+0,5", 240, 212,120,53,2);
+    fillBlock("-0,5", 360, 212,120,53,2);
+    background(0,265,toRGB565(0xcc,0xcc,0xcc));
+    background(120,265,toRGB565(0xcc,0xcc,0xcc));
+    background(240,265,toRGB565(0xcc,0xcc,0xcc));
     fillBlock("Font", 360, 266,120,53,2);
     //lcd
     unsigned char *parlcd_mem_base;
@@ -253,7 +256,7 @@ int main(int argc, char *argv[])
         break;
       case 2:
         if (currentRow == 6) break;
-        if (currentRow == 3 && isTogether) currentColumn = currentColumn == 1 ? 3 : 1;
+        if (currentRow == 3 && isTogether) currentColumn = currentColumn == 1 ? 2 : 1;
         currentColumn = currentColumn == 3 ? 1 : currentColumn+1;
         break;
       case 3:
@@ -261,6 +264,7 @@ int main(int argc, char *argv[])
         if (currentRow == 3) 
         {
           if (!isTogether) currentColumn = currentColumn == 1 ? 3 : 1;
+          break;
         }
         currentColumn = currentColumn == 3 ? 1 : currentColumn+1;
         break;
@@ -319,8 +323,8 @@ int main(int argc, char *argv[])
           currentRow++;
           break;
         case 5:
-          currentRow = 3;
-          currentColumn = 6;
+          currentRow = 6;
+          currentColumn = 3;
         break;
         case 6:
           currentRow = 1;
