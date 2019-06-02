@@ -22,13 +22,47 @@ void blockColorChange(int blockX, int blockY, int blockXrange, int blockYrange, 
         }
     }
 };
+void background(int blockX, int blockY,uint16_t color){
+  for(int x = blockX; x < blockX + 120; ++x){
+        for(int y = blockY; y < blockY + 64; ++y){
+          if(lcdPixels[x][y] != 0x0){
+            lcdPixels[x][y] = color;}
+        }
+    }
 
+}
+void chosenBorder(int blockX, int blockY, uint16_t color){
+  //up border
+  for(int downBorder = 0; downBorder < 119; downBorder++){
+  lcdPixels[downBorder+blockX][blockY+1] = color;
+  lcdPixels[downBorder+blockX][blockY+2] = color;
+  lcdPixels[downBorder+blockX][blockY+3] = color;
+  }
+  //left border
+  for(int leftBorder = 1; leftBorder < 63; leftBorder++){
+  lcdPixels[blockX+1][leftBorder+blockY] = color;
+  lcdPixels[blockX+2][leftBorder+blockY] = color;
+  lcdPixels[blockX+3][leftBorder+blockY] = color;
+  }
+  //right border
+  for(int leftBorder = 1; leftBorder < 63; leftBorder++){
+  lcdPixels[blockX+116][leftBorder+blockY] = color;
+  lcdPixels[blockX+117][leftBorder+blockY] = color;
+  lcdPixels[blockX+118][leftBorder+blockY] = color;
+  }
+  //down border
+  for(int downBorder = 0; downBorder < 119; downBorder++){
+  lcdPixels[downBorder+blockX][blockY+60] = color;
+  lcdPixels[downBorder+blockX][blockY+61] = color;
+  lcdPixels[downBorder+blockX][blockY+62] = color;
+  }
+}
 void boardBorder(){
     //down border
     for(int downBorder = 0; downBorder < 480; downBorder++){
         lcdPixels[downBorder][319] = 0xF800;
-	    lcdPixels[downBorder][318] = 0xF800;
-	    lcdPixels[downBorder][317] = 0xF800;
+	      lcdPixels[downBorder][318] = 0xF800;
+	      lcdPixels[downBorder][317] = 0xF800;
     }
     //left border
     for(int leftBorder = 0; leftBorder < 320; leftBorder++){
@@ -39,19 +73,19 @@ void boardBorder(){
     //right border
     for(int leftBorder = 0; leftBorder < 320; leftBorder++){
         lcdPixels[479][leftBorder] = 0xF800;
-	    lcdPixels[478][leftBorder] = 0xF800;
-	    lcdPixels[477][leftBorder] = 0xF800;
+	      lcdPixels[478][leftBorder] = 0xF800;
+	      lcdPixels[477][leftBorder] = 0xF800;
     }
     //up border
     for(int downBorder = 0; downBorder < 480; downBorder++){
         lcdPixels[downBorder][0] = 0xF800;
-	    lcdPixels[downBorder][1] = 0xF800;
-	    lcdPixels[downBorder][2] = 0xF800;
+	      lcdPixels[downBorder][1] = 0xF800;
+	      lcdPixels[downBorder][2] = 0xF800;
     }
 }
 
 //Fill the bord with a word
-void fillBlock(char* str, int blockX, int blockY, int size){
+void fillBlock(char* str, int blockX, int blockY, int blockXsize, int blockYsize, int size ){
         size_t length = strlen(str);
         size_t i = 0;
         
@@ -59,13 +93,13 @@ void fillBlock(char* str, int blockX, int blockY, int size){
         char c;
         int textX,textY,charWidth, num1, num2;
         //up border of a block
-        for(int borderX = 0; borderX<blockX+120; borderX++){
-            lcdPixels[borderX][blockY + 63] = 0x0;
+        for(int borderX = 0; borderX<blockX+blockXsize; borderX++){
+            lcdPixels[borderX][blockY + blockYsize-1] = 0x0;
         }
 
         //right border of a block
-        for(int borderY = 0; borderY < blockY + 64; borderY++){
-            lcdPixels[blockX + 119][borderY] = 0x0;
+        for(int borderY = 0; borderY < blockY + blockYsize; borderY++){
+            lcdPixels[blockX + blockXsize-1][borderY] = 0x0;
         }
         //calculate the length of the string to put it in the middle of the block
         for(; i<length; i++){
@@ -76,7 +110,7 @@ void fillBlock(char* str, int blockX, int blockY, int size){
         }
 	
         //left corner to print the string in the block
-        textX = blockX + (120 - string_width*size)/2;
+        textX = blockX + (blockXsize - string_width*size)/2;
         textY = blockY + 8*3/size;
         while((c = *str++) != 0){
 	
@@ -102,6 +136,29 @@ void fillBlock(char* str, int blockX, int blockY, int size){
 	    }      
 }
 
+typedef struct 
+{
+  char r;
+  char g;
+  char b;
+} RGB;
+
+  int toRGB565(char red, char green, char blue)
+  {
+      uint16_t b = (blue >> 3) & 0x1f;
+      uint16_t g = ((green >> 2) & 0x3f) <<5;
+      uint16_t r = ((red >> 3) & 0x1f) << 11;
+
+      return (uint16_t) (r | g | b);
+      
+  }
+
+
+int rgbtohex(RGB rgb)
+{
+  return ((rgb.r & 0xff) << 16) + ((rgb.g & 0xff) << 8) + (rgb.b & 0xff);
+}
+
 int main(int argc, char *argv[])
 { 
   unsigned char *mem_base;
@@ -113,56 +170,54 @@ int main(int argc, char *argv[])
     blockColorChange(0,0,480,320, 0xFFFF);
     
     //Fill the  Blocks for two lines
-    fillBlock("Light:", 0, 0,2);
-    fillBlock("Left", 120, 0,2);
-    fillBlock("Right", 240, 0,3);
-    fillBlock("Both", 360, 0,2);
-    fillBlock("Mode:", 0, 64,2);
-    fillBlock("Still", 120, 64,1);
-    fillBlock("Grad", 240, 64,2);
-    fillBlock("Shift", 360, 64,3);
-    boardBorder();
+    
+    fillBlock("LED:", 0, 0,120,64,2);
+    background(0,0,toRGB565(0xcc,0xcc,0xcc));
+    fillBlock("Left", 120, 0,120,64,2);
+    fillBlock("Right", 240, 0,120,64,2);
+    fillBlock("Both", 360, 0,120,64,2);
+    background(0,64,toRGB565(0xcc,0xcc,0xcc));
+    fillBlock("Mode:", 0, 64,120,64,2);
+    fillBlock("Still", 120, 64,120,64,2);
+    fillBlock("Grad", 240, 64,120,64,2);
+    fillBlock("Shift", 360, 64,120,64,2);
+    background(0,128,toRGB565(0xcc,0xcc,0xcc));
+    fillBlock("Color:", 0, 128,120,64,2);
+    fillBlock("Left", 120, 128,120,64,2);
+    fillBlock("Right", 240, 128,120,64,2);
+    fillBlock("Copy", 360, 128,120,64,2);
+    background(0,192,toRGB565(0xcc,0xcc,0xcc));
+    fillBlock("Mode:", 0, 192,120,64,2);
+    fillBlock("Still", 120, 192,120,64,2);
+    fillBlock("Grad", 240, 192,120,64,2);
+    fillBlock("Shift", 360, 192,120,64,2);
     //lcd
     unsigned char *parlcd_mem_base;
     parlcd_mem_base = map_phys_address(PARLCD_REG_BASE_PHYS, PARLCD_REG_SIZE, 0);
-    if (parlcd_mem_base == NULL)  exit(1);
+    if (parlcd_mem_base == NULL)  exit(1);;
     parlcd_hx8357_init(parlcd_mem_base);
     *(volatile uint16_t*)(parlcd_mem_base + PARLCD_REG_CMD_o) = 0x2c;
-    // lcd = map_phys_address(PARLCD_REG_BASE_PHYS, 4, false);
-    for (int x = 0; x < 320; ++x) {
-		for (int y = 0; y < 480; ++y) {
-			parlcd_write_data(parlcd_mem_base, lcdPixels[y][x]);
-		}
-
-    // int row, columns;
-    // for (int row=0; row<320; row++)
-    // {
-    //     for(int columns=0; columns<480; columns++)
-    //         {
-    //         printf("%d     ", lcdPixels[columns][row]);
-    //         }
-    //     printf("\n");
-    // }
 
 
+  
   uint32_t rgb_knobs_value;
   int rk, gk, bk,rb, gb, bb;
   clock_t before = clock();
+  clock_t beforer = clock();
+  clock_t clockCounter = clock();
   clock_t difference = clock() - before;  
-  // }
-  //fill the block (coordinates of a block and etc)
-  //fillBlock(char* str, int  blockX, int  blockY){textCoor = textCornerCoordinate(char*str, )
-  //for char in a string
-  //pixels aldy , pixeldyn tuse almastyru
-  //дефолтные по бокам ,12 вызовов для функции
-  //по нажатию кноба отслеживать их координаты 
-  //наверху название 
-  //внизу подсказки
-  //передавать я буду 0 1 2 завимисимости от положения кноба
-  //передавать значения лефтколор и блаблрала 
-  
+  clock_t differencer = clock() - beforer; 
+  bool isLeft = false, isRight = false, isTogether = false, changed = true;
+  RGB leftcolor = {0, 255, 0}, rightcolor = {255, 0, 0}, leftnew = {0,0,255}, rightnew = {255,255,255};
+  int leftcolorhsv = 0xaa11, rightcolorhsv  = 0xbbbb, mode = 2; //1 - still, 2 - gradient, 3 - blinkkink
+  int  changetime = 1000000;
+  bool reverse = false, lefton = true, righton = true;
+  int blinktime = 100000, fadetime = 100000, shift = 50000;
+  int columnCounter = 1;
+  int rowCounter = 0;
   while (1)
   {
+    
     rgb_knobs_value = *(volatile uint32_t*)(mem_base + SPILED_REG_KNOBS_8BIT_o);
     bk =  rgb_knobs_value      & 0xFF; // blue knob position
     gk = (rgb_knobs_value>>8)  & 0xFF; // green knob position
@@ -170,23 +225,57 @@ int main(int argc, char *argv[])
     bb = (rgb_knobs_value>>24) & 1;    // blue button
     gb = (rgb_knobs_value>>25) & 1;    // green button
     rb = (rgb_knobs_value>>26) & 1;    // red buttom
+    
 
-    bool isTogether = false;
-    int leftcolor, rightcolor, mode; //0 - still, 1 - gradient, 2 - blinkkink
-    int leftnew, rightnew, changetime;
-    int blinktime, faddetime, phase;
+    if(rb && (clock()-clockCounter>=200000)){
+      if(columnCounter>3){
+         columnCounter = columnCounter - 3;
+      }
+      if(columnCounter>=2){
+        chosenBorder(120*(columnCounter-1),64*rowCounter,0xffff);
+      }
+      if(columnCounter==1){
+        chosenBorder(120*(3),64*rowCounter,0xffff);
+      }
+      
+      chosenBorder(120*columnCounter,64*rowCounter,0x07E0);
+      clockCounter = clock();
+      columnCounter++;
 
-    bool isTogether = false, changed = true;
-    int leftcolor, rightcolor, mode; //0 - still, 1 - gradient, 2 - blinkkink
-    int leftnew, rightnew, changetime;
-    bool reverse = false, lefton = true, righton = true;
-    int blinktime, fadetime, shift;
+    }
+    if(gb && (clock()-clockCounter>=200000)){
+      clockCounter = clock();
+      rowCounter++;
+      if(columnCounter>1){
+      chosenBorder(120*(columnCounter-1),64*rowCounter,0x07E0);
+      chosenBorder(120*(columnCounter-1),64*(rowCounter-1),0xffff);
+      }
+      else{
+        chosenBorder(120*(columnCounter),64*rowCounter,0x07E0);
+        chosenBorder(120*columnCounter,64*(rowCounter-1),0xffff);
 
+      }
+
+
+    }
+    if(bb){
+      background(240,64,0x7BE0);
+      chosenBorder(240,64,0x07E0);
+
+    }
+
+    
+
+    for (int x = 0; x < 320; ++x) {
+		  for (int y = 0; y < 480; ++y) {
+			  parlcd_write_data(parlcd_mem_base, lcdPixels[y][x]);
+		  }
+    }
     // if (!changed) continue;
     if (mode == 1)
     {
-      *(volatile uint32_t*)(mem_base + SPILED_REG_LED_RGB1_o) = leftcolor;
-      *(volatile uint32_t*)(mem_base + SPILED_REG_LED_RGB2_o) = isTogether? leftcolor : rightcolor;
+      *(volatile uint32_t*)(mem_base + SPILED_REG_LED_RGB1_o) = leftcolorhsv;
+      *(volatile uint32_t*)(mem_base + SPILED_REG_LED_RGB2_o) = isTogether ? leftcolorhsv : rightcolorhsv;
     }
     else if (mode == 2)
     {
@@ -194,30 +283,54 @@ int main(int argc, char *argv[])
       {
         before = clock();
         reverse = false;
-        *(volatile uint32_t*)(mem_base + SPILED_REG_LED_RGB1_o) = leftcolor;
-        *(volatile uint32_t*)(mem_base + SPILED_REG_LED_RGB2_o) = isTogether? leftcolor : rightcolor;
+        *(volatile uint32_t*)(mem_base + SPILED_REG_LED_RGB1_o) = rgbtohex(leftcolor);
+        *(volatile uint32_t*)(mem_base + SPILED_REG_LED_RGB2_o) = isTogether? rgbtohex(leftcolor) : rgbtohex(rightcolor);
       }
       else
       {
         difference = clock() - before;
         if (difference >= changetime)
         {
-          if (reverse)
-          {
-            *(volatile uint32_t*)(mem_base + SPILED_REG_LED_RGB1_o) = leftcolor;
-            *(volatile uint32_t*)(mem_base + SPILED_REG_LED_RGB2_o) = isTogether? leftcolor : rightcolor;
-          }
-          else
-          {
-            *(volatile uint32_t*)(mem_base + SPILED_REG_LED_RGB1_o) = leftnew;
-            *(volatile uint32_t*)(mem_base + SPILED_REG_LED_RGB2_o) = isTogether? leftnew : rightnew;
-          }
-          reverse = !reverse;
+          // if (reverse)
+          // {
+          //   *(volatile uint32_t*)(mem_base + SPILED_REG_LED_RGB1_o) = rgbtohex(leftcolor);
+          //   *(volatile uint32_t*)(mem_base + SPILED_REG_LED_RGB2_o) = isTogether? rgbtohex(leftcolor) : rgbtohex(rightcolor);
+          // }
+          // else
+          // {
+          //   *(volatile uint32_t*)(mem_base + SPILED_REG_LED_RGB1_o) = rgbtohex(leftnew);
+          //   *(volatile uint32_t*)(mem_base + SPILED_REG_LED_RGB2_o) = isTogether? rgbtohex(leftnew) : rgbtohex(rightnew);
+          // }
+          // reverse = !reverse;
           before = clock();
+          char tempr = leftcolor.r, tempg = leftcolor.g, tempb = leftcolor.b;
+          leftcolor.r = leftnew.r;
+          leftcolor.g = leftnew.g;
+          leftcolor.b = leftnew.b;
+          leftnew.r = tempr;
+          leftnew.g = tempg;
+          leftnew.b = tempb;
+          tempr = rightcolor.r, tempg = rightcolor.g, tempb = rightcolor.b;
+          rightcolor.r = rightnew.r;
+          rightcolor.g = rightnew.g;
+          rightcolor.b = rightnew.b;
+          rightnew.r = tempr;
+          rightnew.g = tempg;
+          rightnew.b = tempb;
         }
         else
         {
-          //average colors??????????
+          RGB t = {leftcolor.r + ((double)difference)/changetime*(signed char)(leftnew.r - leftcolor.r), 
+              leftcolor.g + ((double)difference)/changetime*(leftnew.g - leftcolor.g), 
+              leftcolor.b + ((double)difference)/changetime*(leftnew.b - leftcolor.b)};
+            *(volatile uint32_t*)(mem_base + SPILED_REG_LED_RGB1_o) = rgbtohex(t);
+            if (!isTogether)
+            {
+              t.r = rightcolor.r + ((double)difference)/changetime*(rightnew.r - rightcolor.r);
+              t.g = rightcolor.g + ((double)difference)/changetime*(rightnew.g - rightcolor.g);
+              t.b = rightcolor.b + ((double)difference)/changetime*(rightnew.b - rightcolor.b);
+            }
+            *(volatile uint32_t*)(mem_base + SPILED_REG_LED_RGB2_o) = rgbtohex(t);
         }
       }
     }
@@ -226,15 +339,16 @@ int main(int argc, char *argv[])
       if (changed) 
       {
         before = clock();
+        beforer = clock() - shift;
         lefton = true;
         righton = true;
-        *(volatile uint32_t*)(mem_base + SPILED_REG_LED_RGB1_o) = leftcolor;
-        *(volatile uint32_t*)(mem_base + SPILED_REG_LED_RGB2_o) = isTogether? leftcolor : rightcolor;
+        *(volatile uint32_t*)(mem_base + SPILED_REG_LED_RGB1_o) = leftcolorhsv;
+        *(volatile uint32_t*)(mem_base + SPILED_REG_LED_RGB2_o) = isTogether? leftcolorhsv : rightcolorhsv;
       }
       else
       {
         difference = clock() - before;
-        int differencer = clock() - before - shift;
+        int differencer = clock() - beforer;
         if (lefton)
         {
           if (difference >= blinktime)
@@ -253,10 +367,10 @@ int main(int argc, char *argv[])
         {
           if (difference >= fadetime)
           {
-            *(volatile uint32_t*)(mem_base + SPILED_REG_LED_RGB1_o) = leftcolor;
+            *(volatile uint32_t*)(mem_base + SPILED_REG_LED_RGB1_o) = leftcolorhsv;
             if (shift == 0) 
             {
-              *(volatile uint32_t*)(mem_base + SPILED_REG_LED_RGB2_o) = isTogether? leftcolor : rightcolor;
+              *(volatile uint32_t*)(mem_base + SPILED_REG_LED_RGB2_o) = isTogether? leftcolorhsv : rightcolorhsv;
               righton = true;
             }
             lefton = true;
@@ -271,44 +385,24 @@ int main(int argc, char *argv[])
               {
                 *(volatile uint32_t*)(mem_base + SPILED_REG_LED_RGB2_o) = 0x0;
                 righton = false;
-                before = clock();
+                beforer = clock();
               }
             }
             else
             {
               if (differencer >= fadetime)
               {
-                *(volatile uint32_t*)(mem_base + SPILED_REG_LED_RGB2_o) = isTogether? leftcolor : rightcolor;
+                *(volatile uint32_t*)(mem_base + SPILED_REG_LED_RGB2_o) = isTogether? leftcolorhsv : rightcolorhsv;
                 righton = true;
-                before = clock();
+                beforer = clock();
               }
             }
         }
       }
     }
+    changed = false;
   }
   
-    // int r = bk;
-    // int x0 = gk;
-    // int y0 = rk;
-    // for (int i = 0; i < 320*480; i++)
-    // {
-    //   int x = i / 480 -x0;
-    //   int y = i % 480 -y0;
-    //   if (abs(x*x+y*y - r*r) <= 2*r)
-    //   {
-    //     *(volatile uint16_t*)(parlcd_mem_base + PARLCD_REG_DATA_o) = 0x0;
-    //     //usleep(10);
-    //   }
-    //   else
-    //   {
-    //     *(volatile uint16_t*)(parlcd_mem_base + PARLCD_REG_DATA_o) = 0xFFFF;
-    //     //usleep(10);
-    //   }
-    // }
-    // usleep(500);
-    // // printf("%d %d %d\n", bk, gk, rk);
-    //   }
 
 
   return 0;
