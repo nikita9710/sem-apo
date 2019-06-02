@@ -139,7 +139,7 @@ int main(int argc, char *argv[])
       {
           if (righton)
           {
-            if (difference >= blinktime)
+            if (differencer >= blinktime)
             {
               *(volatile uint32_t*)(mem_base + SPILED_REG_LED_RGB2_o) = 0x0;
               righton = false;
@@ -148,32 +148,13 @@ int main(int argc, char *argv[])
           }
           else
           {
-            if (difference >= fadetime)
+            if (differencer >= fadetime)
             {
               *(volatile uint32_t*)(mem_base + SPILED_REG_LED_RGB2_o) = isTogether? leftcolor : rightcolor;
               righton = true;
               before = clock();
             }
           }
-      }
-      if (difference >= changetime)
-      {
-        if (reverse)
-        {
-          *(volatile uint32_t*)(mem_base + SPILED_REG_LED_RGB1_o) = leftcolor;
-          *(volatile uint32_t*)(mem_base + SPILED_REG_LED_RGB2_o) = isTogether? leftcolor : rightcolor;
-        }
-        else
-        {
-          *(volatile uint32_t*)(mem_base + SPILED_REG_LED_RGB1_o) = leftnew;
-          *(volatile uint32_t*)(mem_base + SPILED_REG_LED_RGB2_o) = isTogether? leftnew : rightnew;
-        }
-        reverse = !reverse;
-        before = clock();
-      }
-      else
-      {
-        //average colors??????????
       }
     }
   }
