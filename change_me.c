@@ -186,11 +186,11 @@ int main(int argc, char *argv[])
   clock_t clockCounter = clock();
   clock_t difference = clock() - before;  
   clock_t differencer = clock() - beforer; 
-  bool isLeft = false, isRight = false, isTogether = false, isLeft = true, changed = true;
+  bool isTogether = false, isLeft = true, changed = true, isFirst = true;
   RGB leftcolor = {0, 255, 0}, rightcolor = {255, 0, 0}, leftnew = {0,0,255}, rightnew = {255,255,255};
-  int leftcolorhsv = 0xaa11, rightcolorhsv  = 0xbbbb, mode = 1; //1 - still, 2 - gradient, 3 - blinkkink
+  int leftcolorhsv = 0xaa11, rightcolorhsv  = 0xbbbb, mode = 1; //1 - still, 2 - gradient, 3 - blinkink
   int  changetime = 1000000;
-  bool reverse = false, lefton = true, righton = true;
+  bool lefton = true, righton = true;
   int blinktime = 100000, fadetime = 100000, shift = 50000;
   int currentColumn = 1, prevColumn = 1;
   int currentRow = 1, prevRow = 1;
@@ -261,10 +261,6 @@ int main(int argc, char *argv[])
         switch (currentRow)
         {
         case 2:
-          currentColumn = (currentColumn == 3 && !isTogether) ? 3 : 1;
-          currentRow++;
-          break;
-        case 3:
           currentRow = 6;
           currentColumn = 3;
         break;
@@ -303,8 +299,7 @@ int main(int argc, char *argv[])
         switch (currentRow)
         {
         case 2:
-          currentColumn = (currentColumn == 3 && !isTogether) ? 3 : 1;
-          currentRow++;
+          currentRow = 4;
           break;
         case 4:
           if (currentColumn == 1) currentColumn = 2;
@@ -375,24 +370,25 @@ int main(int argc, char *argv[])
         {
         case 1:
           mode = 1;
-          background(120,0,0xA6D5,120);
-          background(240,0,0xffff,120);
-          background(360,0,0xffff,120);
+          background(120,53,0xA6D5,120);
+          background(240,53,0xffff,120);
+          background(360,53,0xffff,120);
           fillBlock("Still", 120, 53,120,53,2);
           fillBlock("Gradient", 240, 53,120,53,2);
           fillBlock("Blink", 360, 53,120,53,2);
           background(120,106,0xffff,360);
           background(0,159,0xD6DA,480);
           background(0,212,0xD6DA,480);
+          background(120,106,toRGB565(rk, gk, bk), 240);
           fillBlock("Use knobs", 120, 106,240,53,2);
           if (!isTogether) fillBlock("Copy", 360, 106,120,53,2);
           else background(360,106,0xD6DA, 120);
           break;
         case 2:
           mode = 2;
-          background(120,0,0xffff,120);
-          background(240,0,0xA6D5,120);
-          background(360,0,0xffff,120);
+          background(120,53,0xffff,120);
+          background(240,53,0xA6D5,120);
+          background(360,53,0xffff,120);
           fillBlock("Still", 120, 53,120,53,2);
           fillBlock("Gradient", 240, 53,120,53,2);
           fillBlock("Blink", 360, 53,120,53,2);
@@ -411,15 +407,16 @@ int main(int argc, char *argv[])
           break;
         case 3:
           mode = 3;
-          background(120,0,0xffff,120);
-          background(240,0,0xA6D5,120);
-          background(360,0,0xffff,120);
+          background(120,53,0xffff,120);
+          background(240,53,0xffff,120);
+          background(360,53,0xA6D5,120);
           fillBlock("Still", 120, 53,120,53,2);
           fillBlock("Gradient", 240, 53,120,53,2);
           fillBlock("Blink", 360, 53,120,53,2);
           background(120,106,0xffff,360);
           background(0,159,0xffff,480);
           background(0,212,0xffff,480);
+          background(120,106,toRGB565(rk, gk, bk), 240);
           fillBlock("Use knobs", 120, 106,240,53,2);
           if (!isTogether) fillBlock("Copy", 360, 106,120,53,2);
           else background(360,106,0xD6DA, 120);
@@ -436,55 +433,24 @@ int main(int argc, char *argv[])
           break;
         }
         break;
-      default:
+      case 3:
+        if (mode == 2)
+        {
+
+
+        }
         break;
       }
-    }
-    // if(rb && (clock()-clockCounter>=200000)){
-    //   if(columnCounter>3){
-    //      columnCounter = columnCounter - 3;
-    //   }
-    //   if(columnCounter>=2){
-    //     chosenBorder(120*(columnCounter-1),64*rowCounter,0xffff);
-    //   }
-    //   if(columnCounter==1){
-    //     chosenBorder(120*(3),64*rowCounter,0xffff);
-    //   }
-      
-    //   chosenBorder(120*columnCounter,64*rowCounter,0x07E0);
-    //   clockCounter = clock();
-    //   columnCounter++;
-
-    // }
-    // if(gb && (clock()-clockCounter>=200000)){
-    //   clockCounter = clock();
-    //   rowCounter++;
-    //   if(columnCounter>1){
-    //   chosenBorder(120*(columnCounter-1),64*rowCounter,0x07E0);
-    //   chosenBorder(120*(columnCounter-1),64*(rowCounter-1),0xffff);
-    //   }
-    //   else{
-    //     chosenBorder(120*(columnCounter),64*rowCounter,0x07E0);
-    //     chosenBorder(120*columnCounter,64*(rowCounter-1),0xffff);
-
-    //   }
-
-
-    // }
-    // if(bb){
-    //   background(240,64,0x7BE0);
-    //   chosenBorder(240,64,0x07E0);
-
-    // }
-
-    
+      if (currentRow == 3 && currentColumn == 1 && mode != 2)setfocus(currentColumn, currentRow, prevColumn, prevRow, true, false);
+      else if (prevRow == 3 && prevColumn == 1 && mode != 2) setfocus(currentColumn, currentRow, prevColumn, prevRow, false, true);
+      else setfocus(currentColumn, currentRow, prevColumn, prevRow, false, false);
+    }   
 
     for (int x = 0; x < 320; ++x) {
 		  for (int y = 0; y < 480; ++y) {
 			  parlcd_write_data(parlcd_mem_base, lcdPixels[y][x]);
 		  }
     }
-    // if (!changed) continue;
     if (mode == 1)
     {
       *(volatile uint32_t*)(mem_base + SPILED_REG_LED_RGB1_o) = leftcolorhsv;
@@ -495,26 +461,15 @@ int main(int argc, char *argv[])
       if (changed) 
       {
         before = clock();
-        reverse = false;
         *(volatile uint32_t*)(mem_base + SPILED_REG_LED_RGB1_o) = rgbtohex(leftcolor);
         *(volatile uint32_t*)(mem_base + SPILED_REG_LED_RGB2_o) = isTogether? rgbtohex(leftcolor) : rgbtohex(rightcolor);
+        changed = false;
       }
       else
       {
         difference = clock() - before;
         if (difference >= changetime)
         {
-          // if (reverse)
-          // {
-          //   *(volatile uint32_t*)(mem_base + SPILED_REG_LED_RGB1_o) = rgbtohex(leftcolor);
-          //   *(volatile uint32_t*)(mem_base + SPILED_REG_LED_RGB2_o) = isTogether? rgbtohex(leftcolor) : rgbtohex(rightcolor);
-          // }
-          // else
-          // {
-          //   *(volatile uint32_t*)(mem_base + SPILED_REG_LED_RGB1_o) = rgbtohex(leftnew);
-          //   *(volatile uint32_t*)(mem_base + SPILED_REG_LED_RGB2_o) = isTogether? rgbtohex(leftnew) : rgbtohex(rightnew);
-          // }
-          // reverse = !reverse;
           before = clock();
           char tempr = leftcolor.r, tempg = leftcolor.g, tempb = leftcolor.b;
           leftcolor.r = leftnew.r;
@@ -557,7 +512,7 @@ int main(int argc, char *argv[])
         righton = true;
         *(volatile uint32_t*)(mem_base + SPILED_REG_LED_RGB1_o) = leftcolorhsv;
         *(volatile uint32_t*)(mem_base + SPILED_REG_LED_RGB2_o) = isTogether? leftcolorhsv : rightcolorhsv;
-    changed = false;
+    c   hanged = false;
       }
       else
       {
