@@ -30,9 +30,9 @@ void background(int blockX, int blockY,uint16_t color, int blockXsize){
     }
 
 }
-void chosenBorder(int blockX, int blockY, uint16_t color){
+void chosenBorder(int blockX, int blockY, uint16_t color, bool isDoubled){
   //up border
-  for(int downBorder = 0; downBorder < 119; downBorder++){
+  for(int downBorder = 0; downBorder < isDoubled ? 239: 119; downBorder++){
   lcdPixels[downBorder+blockX][blockY+1] = color;
   lcdPixels[downBorder+blockX][blockY+2] = color;
   lcdPixels[downBorder+blockX][blockY+3] = color;
@@ -45,12 +45,12 @@ void chosenBorder(int blockX, int blockY, uint16_t color){
   }
   //right border
   for(int leftBorder = 0; leftBorder < 52; leftBorder++){
-  lcdPixels[blockX+116][leftBorder+blockY] = color;
-  lcdPixels[blockX+117][leftBorder+blockY] = color;
-  lcdPixels[blockX+118][leftBorder+blockY] = color;
+  lcdPixels[blockX+isDoubled ? 236: 116][leftBorder+blockY] = color;
+  lcdPixels[blockX+isDoubled ? 237: 117][leftBorder+blockY] = color;
+  lcdPixels[blockX+isDoubled ? 238: 118][leftBorder+blockY] = color;
   }
   //down border
-  for(int downBorder = 0; downBorder < 119; downBorder++){
+  for(int downBorder = 0; downBorder < isDoubled ? 239: 119; downBorder++){
   lcdPixels[downBorder+blockX][blockY+49] = color;
   lcdPixels[downBorder+blockX][blockY+50] = color;
   lcdPixels[downBorder+blockX][blockY+51] = color;
@@ -66,12 +66,12 @@ void fillBlock(char* str, int blockX, int blockY, int blockXsize, int blockYsize
         char c;
         int textX,textY,charWidth, num1, num2;
         //up border of a block
-        for(int borderX = 0; borderX<blockX+blockXsize; borderX++){
+        for(int borderX = blockX; borderX<blockX+blockXsize; borderX++){
             lcdPixels[borderX][blockY + blockYsize-1] = 0x0;
         }
 
         //right border of a block
-        for(int borderY = 0; borderY < blockY + blockYsize; borderY++){
+        for(int borderY = blockY; borderY < blockY + blockYsize; borderY++){
             lcdPixels[blockX + blockXsize-1][borderY] = 0x0;
         }
         //calculate the length of the string to put it in the middle of the block
@@ -132,10 +132,10 @@ int rgbtohex(RGB rgb)
   return ((rgb.r & 0xff) << 16) + ((rgb.g & 0xff) << 8) + (rgb.b & 0xff);
 }
 
-void setfocus(int col, int row, int oldcol, int oldrow)
+void setfocus(int col, int row, int oldcol, int oldrow, bool isDoubled, bool isPrevDoubled)
 {
-  chosenBorder(120*(oldcol),53*(oldrow-1),0xffff);
-  chosenBorder(120*(col),53*(row-1),0x07E0);
+  chosenBorder(120*(oldcol),53*(oldrow-1),0xffff, isDoubled);
+  chosenBorder(120*(col),53*(row-1),0x07E0, isPrevDoubled);
 }
 
 int main(int argc, char *argv[])
@@ -192,6 +192,7 @@ int main(int argc, char *argv[])
   int blinktime = 100000, fadetime = 100000, shift = 50000;
   int currentColumn = 1, prevColumn = 1;
   int currentRow = 1, prevRow = 1;
+  setfocus(currentColumn, currentRow, prevColumn, prevRow, false, false);
   while (1)
   {
     rgb_knobs_value = *(volatile uint32_t*)(mem_base + SPILED_REG_KNOBS_8BIT_o);
@@ -234,7 +235,9 @@ int main(int argc, char *argv[])
         currentColumn = currentColumn == 3 ? 1 : currentColumn+1;
         break;
       }
-      setfocus(currentColumn, currentRow, prevColumn, prevRow);
+      if (currentColumn == 3 && mode != 2)setfocus(currentColumn, currentRow, prevColumn, prevRow, true, false);
+      else etfocus(currentColumn, currentRow, prevColumn, prevRow, false, true);
+      setfocus(currentColumn, currentRow, prevColumn, prevRow, false, false);
       clockCounter = clock();
     }
     if(gb && (clock()-clockCounter>=150000)){
@@ -300,7 +303,7 @@ int main(int argc, char *argv[])
         }
         break;
       }
-      setfocus(currentColumn, currentRow, prevColumn, prevRow);
+      setfocus(currentColumn, currentRow, prevColumn, prevRow, false, false);
       clockCounter = clock();
     }
     if(bb && (clock()-clockCounter>=150000)){
