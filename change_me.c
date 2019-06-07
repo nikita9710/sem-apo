@@ -127,49 +127,158 @@ typedef struct
   }
 
 
-int rgbtohex(RGB rgb)
+int rgbtohex(RGB* rgb)
 {
-  return ((rgb.r & 0xff) << 16) + ((rgb.g & 0xff) << 8) + (rgb.b & 0xff);
+  return ((rgb->r & 0xff) << 16) + ((rgb->g & 0xff) << 8) + (rgb->b & 0xff);
 }
 
-void setfocus(int col, int row, int oldcol, int oldrow, bool isDoubled, bool isPrevDoubled)
+void setfocus(int col, int row, int oldcol, int oldrow, int mode)
 {
-  chosenBorder(120*(oldcol),53*(oldrow-1),0xffff, isPrevDoubled);
-  chosenBorder(120*(col),53*(row-1),0x07E0, isDoubled);
+  if (row == 3 && col == 1 && mode != 2) chosenBorder(120*(col),53*(row-1),0x07E0, true);
+  else chosenBorder(120*(col),53*(row-1),0x07E0, false);
+  if (oldrow == 3 && oldcol == 1 && mode != 2) chosenBorder(120*(oldcol),53*(oldrow-1),0xffff, true);
+  else chosenBorder(120*(oldcol),53*(oldrow-1),0xffff, false);
 }
 
-void updateLED(RGB* leftcolor, RGB* rightcolor,  RGB* leftnew, RGB* rightnew, int mode, bool isLeft)
+focus(int col, int row, int mode)
+{
+  if (row == 3 && col == 1 && mode != 2) chosenBorder(120*(col),53*(row-1),0x07E0, true);
+  else chosenBorder(120*(col),53*(row-1),0x07E0, false);
+}
+
+void updateLED(RGB* leftcolor, RGB* rightcolor,  RGB* leftnew, RGB* rightnew, int mode, bool isLeft, char fontsize)
 {
       if (mode == 2)
       {
           if (isLeft)
           {
             background(120,106,toRGB565(leftcolor->r, leftcolor->g, leftcolor->b), 120);
-            fillBlock("Color 1", 120, 106,120,53,2);
             background(240,106,toRGB565(leftnew->r, leftnew->g, leftnew->b), 120);
-            fillBlock("Color 2", 240, 106,120,53,2);
           }
           else
           {
             background(120,106,toRGB565(rightcolor->r, rightcolor->g, rightcolor->b), 120);
-            fillBlock("Color 1", 120, 106,120,53,2);
             background(240,106,toRGB565(rightnew->r, rightnew->g, rightnew->b), 120);
-            fillBlock("Color 2", 240, 106,120,53,2);
           }
+          fillBlock("Color 1", 120, 106,120,53,fontsize);
+          fillBlock("Color 2", 240, 106,120,53,fontsize);
       }
       else
       {
-          if (isLeft)
-          {
-            background(120,106,toRGB565(leftcolor->r, leftcolor->g, leftcolor->b), 240);
-            fillBlock("Use knobs", 120, 106,240,53,2);
-          }
-          else
-          {
-            background(120,106,toRGB565(rightcolor->r, rightcolor->g, rightcolor->b), 240);
-            fillBlock("Use knobs", 120, 106,240,53,2);
-          }
+          if (isLeft) background(120,106,toRGB565(leftcolor->r, leftcolor->g, leftcolor->b), 240);
+          else background(120,106,toRGB565(rightcolor->r, rightcolor->g, rightcolor->b), 240);
+          fillBlock("Use knobs", 120, 106,240,53,fontsize);
       }
+}
+
+void setCopyButton(bool isOn, char fontsize)
+{
+  if (isOn)
+  if (isOn) 
+  {
+    background(360,106,0xffff, 120);
+    fillBlock("Copy", 360, 106,120,53,fontsize);
+  }
+  else background(360,106,0xD6DA, 120);
+}
+
+
+void redrawLEDLine(bool isTogether, bool isLeft, char fontsize)
+{
+  background(120,0,0xffff,120);
+  background(240,0,0xffff,120);
+  background(360,0,0xffff,120);
+  if (isTogether) background(360,0,0xA6D5,120);
+  else if (isLeft) background(120,0,0xA6D5,120);
+  else background(240,0,0xA6D5,120);
+  fillBlock("Left", 120, 0,120,53,fontsize);
+  fillBlock("Right", 240, 0,120,53,fontsize);
+  fillBlock("Both", 360, 0,120,53,fontsize); 
+}
+
+void redrawModeLine(int mode, char fontsize)
+{
+  background(120,53,0xffff,120);
+  background(240,53,0xffff,120);
+  background(360,53,0xffff,120);
+  background(120*mode,53,0xA6D5,120);
+  fillBlock("Still", 120, 53,120,53,fontsize);
+  fillBlock("Gradient", 240, 53,120,53,fontsize);
+  fillBlock("Blink", 360, 53,120,53,fontsize);  
+}
+
+void redrawSetupLine(int mode, float time, char fontsize)
+{
+  switch (mode)
+  {
+  case 1:
+    background(0,159,0xD6DA,480);
+    break;
+  
+  case 2:
+    background(0,159,0xD6DA, 120);
+    background(120,159,0xffff,360);
+    fillBlock("Duration", 0, 159,120,53,fontsize);
+    fillBlock(str(time), 120, 159,120,53,fontsize); 
+    fillBlock("+0,5", 240, 159,120,53,fontsize);
+    fillBlock("-0,5", 360, 159,120,53,fontsize);
+    break;
+  
+  case 3:
+    background(0,159,0xD6DA, 120);
+    background(120,159,0xffff,360);
+    fillBlock("Setup:", 0, 159,120,53,fontsize);
+    fillBlock("Time on", 120, 159,120,53,fontsize);
+    fillBlock("Time off", 240, 159,120,53,fontsize);
+    fillBlock("Shift", 360, 159,120,53,fontsize);
+    break;
+  }
+}
+
+void redrawPrefLine(int mode, char* text, float time, char fontsize)
+{
+  switch (mode)
+  {
+  case 1:
+    background(0,212,0xD6DA,480);
+    break;
+  
+  case 2:
+    background(0,212,0xD6DA,480);
+    break;
+  
+  case 3:
+    background(0,212,0xD6DA, 120);
+    background(120,212,0xffff,360);
+    fillBlock(text, 0, 212,120,53,fontsize);
+    fillBlock(str(time), 120, 212,120,53,fontsize);
+    fillBlock("+0,5", 240, 212,120,53,fontsize);
+    fillBlock("-0,5", 360, 212,120,53,fontsize);
+    break;
+  }
+}
+
+void redrawConstants(char fontsize)
+{
+  background(0,0,0xD6DA, 120);
+  fillBlock("LED:", 0, 0,120,53,fontsize);
+  background(0,53,0xD6DA, 120);
+  fillBlock("Mode:", 0, 53,120,53,fontsize);
+  background(0,106,0xD6DA, 120);
+  fillBlock("Color:", 0, 106,120,53,fontsize);
+  background(0,265,0xD6DA, 360);
+  fillBlock("Font", 360, 265,120,53,fontsize);
+}
+
+void redrawAll(bool isTogether, RGB* leftcolor, RGB* rightcolor,  RGB* leftnew, RGB* rightnew, int mode, bool isLeft, char fontsize)
+{
+  redrawConstants(fontsize);
+  redrawLEDLine(isTogether, isLeft,fontsize);
+  redrawModeLine(mode,fontsize);
+  updateLED(&leftcolor, &rightcolor, &leftnew, &rightnew, mode, isLeft,fontsize);
+  setCopyButton(true,fontsize);
+  redrawSetupLine(mode, 0,fontsize);
+  redrawPrefLine(mode, "",0,fontsize);
 }
 
 int main(int argc, char *argv[])
@@ -179,40 +288,6 @@ int main(int argc, char *argv[])
   mem_base = map_phys_address(SPILED_REG_BASE_PHYS, SPILED_REG_SIZE, 0);
 
   if (mem_base == NULL) exit(1);
-    //color whole background
-    blockColorChange(0,0,480,320, 0xFFFF);
-    
-    //Fill the  Blocks for two lines
-    
-    background(0,0,0xD6DA, 120);
-    background(120,0,0xA6D5,120);
-    fillBlock("LED:", 0, 0,120,53,2);
-    fillBlock("Left", 120, 0,120,53,2);
-    fillBlock("Right", 240, 0,120,53,2);
-    fillBlock("Both", 360, 0,120,53,2);
-    background(0,53,0xD6DA, 120);
-    background(120,53,0xA6D5,120);
-    fillBlock("Mode:", 0, 53,120,53,2);
-    fillBlock("Still", 120, 53,120,53,2);
-    fillBlock("Gradient", 240, 53,120,53,2);
-    fillBlock("Blink", 360, 53,120,53,2);
-    background(0,106,0xD6DA, 120);
-    fillBlock("Color:", 0, 106,120,53,2);
-    fillBlock("Use knobs", 120, 106,240,53,2);
-    fillBlock("Copy", 360, 106,120,53,2);
-    fillBlock("Font", 360, 265,120,53,2);
-    background(0,159,0xD6DA,480);
-    background(0,212,0xD6DA,480);
-    background(0,265,0xD6DA, 360);
-    //lcd
-    unsigned char *parlcd_mem_base;
-    parlcd_mem_base = map_phys_address(PARLCD_REG_BASE_PHYS, PARLCD_REG_SIZE, 0);
-    if (parlcd_mem_base == NULL)  exit(1);;
-    parlcd_hx8357_init(parlcd_mem_base);
-    *(volatile uint16_t*)(parlcd_mem_base + PARLCD_REG_CMD_o) = 0x2c;
-
-
-  
   uint32_t rgb_knobs_value;
   int rk, gk, bk,rb, gb, bb;
   clock_t before = clock();
@@ -221,7 +296,10 @@ int main(int argc, char *argv[])
   clock_t difference = clock() - before;  
   clock_t differencer = clock() - beforer; 
   bool isTogether = false, isLeft = true, changed = true, isFirst = true;
-  RGB leftcolor = {0, 255, 0}, rightcolor = {255, 0, 0}, leftnew = {0,0,255}, rightnew = {255,255,255}, t, gradleft = {0,0,255}, gradright = {0,0,255}, gradleftnew = {0,0,255}, gradrightnew = {0,0,255};
+  RGB leftcolor = {0, 255, 0}, rightcolor = {255, 0, 0}, 
+      leftnew = {0,0,255}, rightnew = {255,255,255}, t, 
+      gradleft = {0,0,255}, gradright = {0,0,255}, 
+      gradleftnew = {0,0,255}, gradrightnew = {0,0,255};
   int rprev = 0, gprev = 0, bprev = 0;
   int  mode = 2; //1 - still, 2 - gradient, 3 - blinkink
   int  changetime = 1000000;
@@ -229,7 +307,17 @@ int main(int argc, char *argv[])
   int blinktime = 100000, fadetime = 100000, shift = 50000;
   int currentColumn = 1, prevColumn = 1;
   int currentRow = 1, prevRow = 1;
-  setfocus(currentColumn, currentRow, prevColumn, prevRow, false, false);
+  int fontsize = 2;
+  unsigned char *parlcd_mem_base;
+  parlcd_mem_base = map_phys_address(PARLCD_REG_BASE_PHYS, PARLCD_REG_SIZE, 0);
+  if (parlcd_mem_base == NULL)  exit(1);
+  parlcd_hx8357_init(parlcd_mem_base);
+  *(volatile uint16_t*)(parlcd_mem_base + PARLCD_REG_CMD_o) = 0x2c;
+
+
+  redrawAll(isTogether, &leftcolor, &rightcolor, &leftnew, &rightnew, mode, isLeft,fontsize);
+  focus(currentColumn, currentRow, mode);
+
   while (1)
   {
     rgb_knobs_value = *(volatile uint32_t*)(mem_base + SPILED_REG_KNOBS_8BIT_o);
@@ -274,8 +362,10 @@ int main(int argc, char *argv[])
         rightcolor.b = bk;
         }
       }
-      updateLED(&leftcolor, &rightcolor, &leftnew, &rightnew, mode, isLeft);
+      updateLED(&leftcolor, &rightcolor, &leftnew, &rightnew, mode, isLeft,fontsize);
     }
+
+
     if(rb && (clock()-clockCounter>=150000)){
       prevColumn = currentColumn;
       prevRow = currentRow;
@@ -311,11 +401,11 @@ int main(int argc, char *argv[])
         currentColumn = currentColumn == 3 ? 1 : currentColumn+1;
         break;
       }
-      if (currentRow == 3 && currentColumn == 1 && mode != 2)setfocus(currentColumn, currentRow, prevColumn, prevRow, true, false);
-      else if (prevRow == 3 && prevColumn == 1 && mode != 2) setfocus(currentColumn, currentRow, prevColumn, prevRow, false, true);
-      else setfocus(currentColumn, currentRow, prevColumn, prevRow, false, false);
+      setfocus(currentColumn, currentRow, prevColumn, prevRow, mode);
       clockCounter = clock();
     }
+
+
     if(gb && (clock()-clockCounter>=150000)){
       prevColumn = currentColumn;
       prevRow = currentRow;
@@ -375,10 +465,7 @@ int main(int argc, char *argv[])
         switch (currentRow)
         {
         case 2:
-          if (isTogether)
-          {
-            currentRow = 4;
-          }
+          if (isTogether) currentRow = 4;
           else
           {
             currentRow = 3;
@@ -402,11 +489,11 @@ int main(int argc, char *argv[])
         }
         break;
       }
-      if (currentRow == 3 && currentColumn == 1 && mode != 2)setfocus(currentColumn, currentRow, prevColumn, prevRow, true, false);
-      else if (prevRow == 3 && prevColumn == 1 && mode != 2) setfocus(currentColumn, currentRow, prevColumn, prevRow, false, true);
-      else setfocus(currentColumn, currentRow, prevColumn, prevRow, false, false);
+      setfocus(currentColumn, currentRow, prevColumn, prevRow, mode);
       clockCounter = clock();
     }
+
+    
     if(bb && (clock()-clockCounter>=150000)){
       switch (currentRow)
       {
@@ -418,40 +505,20 @@ int main(int argc, char *argv[])
           if (!isLeft || isTogether) changed = true;
           isLeft = true;
           isTogether = false;
-          background(120,0,0xA6D5,120);
-          background(240,0,0xffff,120);
-          background(360,0,0xffff,120);
-          fillBlock("Left", 120, 0,120,53,2);
-          fillBlock("Right", 240, 0,120,53,2);
-          fillBlock("Both", 360, 0,120,53,2);
-          background(360,106,0xffff, 120);
-          fillBlock("Copy", 360, 106,120,53,2);
           break;
         case 2:
           if (isLeft || isTogether) changed = true;
           isLeft = false;
           isTogether = false;
-          background(120,0,0xffff,120);
-          background(240,0,0xA6D5,120);
-          background(360,0,0xffff,120);
-          fillBlock("Left", 120, 0,120,53,2);
-          fillBlock("Right", 240, 0,120,53,2);
-          fillBlock("Both", 360, 0,120,53,2);
-          background(360,106,0xffff, 120);
-          fillBlock("Copy", 360, 106,120,53,2);
           break;
         case 3:
           if (!isTogether) changed = true;
           isTogether = true;
-          background(120,0,0xffff,120);
-          background(240,0,0xffff,120);
-          background(360,0,0xA6D5,120);
-          fillBlock("Left", 120, 0,120,53,2);
-          fillBlock("Right", 240, 0,120,53,2);
-          fillBlock("Both", 360, 0,120,53,2);
-          background(360,106,0xD6DA, 120);
           break;
         }
+        redrawLEDLine(isTogether, isLeft,fontsize);
+        setCopyButton(!isTogether,fontsize);
+        focus(currentRow, currentColumn, mode);
         break;
       case 2:
         changed = true;
@@ -459,73 +526,27 @@ int main(int argc, char *argv[])
         {
         case 1:
           mode = 1;
-          background(120,53,0xA6D5,120);
-          background(240,53,0xffff,120);
-          background(360,53,0xffff,120);
-          fillBlock("Still", 120, 53,120,53,2);
-          fillBlock("Gradient", 240, 53,120,53,2);
-          fillBlock("Blink", 360, 53,120,53,2);
-          background(120,106,0xffff,360);
-          background(0,159,0xD6DA,480);
-          background(0,212,0xD6DA,480);
-          background(120,106,toRGB565(rk, gk, bk), 240);
-          fillBlock("Use knobs", 120, 106,240,53,2);
-          if (!isTogether) fillBlock("Copy", 360, 106,120,53,2);
-          else background(360,106,0xD6DA, 120);
+          redrawSetupLine(1,0,fontsize);
+          redrawPrefLine(1, "", 0,fontsize);
           break;
         case 2:
           mode = 2;
-          background(120,53,0xffff,120);
-          background(240,53,0xA6D5,120);
-          background(360,53,0xffff,120);
-          fillBlock("Still", 120, 53,120,53,2);
-          fillBlock("Gradient", 240, 53,120,53,2);
-          fillBlock("Blink", 360, 53,120,53,2);
-          background(120,106,0xffff,360);
-          background(0,159,0xffff,480);
-          background(0,212,0xD6DA,480);
-          fillBlock("Color 1", 120, 106,120,53,2);
-          fillBlock("Color 2", 240, 106,120,53,2);
-          if (!isTogether) fillBlock("Copy", 360, 106,120,53,2);
-          else background(360,106,0xD6DA, 120);
-          background(0,159,0xD6DA, 120);
-          fillBlock("Duration", 0, 159,120,53,2);
-          fillBlock("5,0", 120, 159,120,53,2); ////hbvkvlugvguvugffgluyg
-          fillBlock("+0,5", 240, 159,120,53,2);
-          fillBlock("-0,5", 360, 159,120,53,2);
+          redrawSetupLine(2,changetime/1000000.0,fontsize);
+          redrawPrefLine(2, "", 0,fontsize);
           break;
         case 3:
           mode = 3;
-          background(120,53,0xffff,120);
-          background(240,53,0xffff,120);
-          background(360,53,0xA6D5,120);
-          fillBlock("Still", 120, 53,120,53,2);
-          fillBlock("Gradient", 240, 53,120,53,2);
-          fillBlock("Blink", 360, 53,120,53,2);
-          background(120,106,0xffff,360);
-          background(0,159,0xffff,480);
-          background(0,212,0xffff,480);
-          background(120,106,toRGB565(rk, gk, bk), 240);
-          fillBlock("Use knobs", 120, 106,240,53,2);
-          if (!isTogether) fillBlock("Copy", 360, 106,120,53,2);
-          else background(360,106,0xD6DA, 120);
-          background(0,159,0xD6DA, 120);
-          fillBlock("Setup:", 0, 159,120,53,2);
-          fillBlock("Time on", 120, 159,120,53,2);
-          fillBlock("Time off", 240, 159,120,53,2);
-          fillBlock("Shift", 360, 159,120,53,2);
-          background(0,212,0xD6DA, 120);
-          fillBlock("Time on", 0, 212,120,53,2);
-          fillBlock("2,0", 120, 212,120,53,2);////hbvkvlugvguvugffgluyg
-          fillBlock("+0,5", 240, 212,120,53,2);
-          fillBlock("-0,5", 360, 212,120,53,2);
+          redrawSetupLine(3,0,fontsize);
+          redrawPrefLine(1, "Time on:", blinktime,fontsize);
           break;
         }
+        redrawModeLine(mode,fontsize);
+        updateLED(&leftcolor, &rightcolor,  &leftnew, &rightnew, mode, isLeft,fontsize);
         break;
       case 3:
+        changed = true;
         if (mode == 2)
         {
-            changed = true;
             switch (currentColumn)
             {
               case 1:
@@ -558,7 +579,6 @@ int main(int argc, char *argv[])
         }
         else
         {
-          changed = true;
           if (isLeft)
           {
             leftcolor.r = rightcolor.r;
@@ -573,10 +593,18 @@ int main(int argc, char *argv[])
                 }
         }
         break;
+        case 4:
+
+        break;
+        case 5:
+
+        break;
+        case 6:
+          fontsize = fontsize == 2? 4 : 2;
+          redrawAll(isTogether, &leftcolor, &rightcolor, &leftnew, &rightnew, mode, isLeft,fontsize);
+        break;
       }
-      if (currentRow == 3 && currentColumn == 1 && mode != 2)setfocus(currentColumn, currentRow, prevColumn, prevRow, true, false);
-      else if (prevRow == 3 && prevColumn == 1 && mode != 2) setfocus(currentColumn, currentRow, prevColumn, prevRow, false, true);
-      else setfocus(currentColumn, currentRow, prevColumn, prevRow, false, false);
+      focus(currentColumn, currentRow, mode);
     }   
 
     for (int x = 0; x < 320; ++x) {
@@ -586,16 +614,16 @@ int main(int argc, char *argv[])
     }
     if (mode == 1)
     {
-      *(volatile uint32_t*)(mem_base + SPILED_REG_LED_RGB1_o) = rgbtohex(leftcolor);
-      *(volatile uint32_t*)(mem_base + SPILED_REG_LED_RGB2_o) = isTogether ? rgbtohex(leftcolor) : rgbtohex(rightcolor);
+      *(volatile uint32_t*)(mem_base + SPILED_REG_LED_RGB1_o) = rgbtohex(&leftcolor);
+      *(volatile uint32_t*)(mem_base + SPILED_REG_LED_RGB2_o) = isTogether ? rgbtohex(&leftcolor) : rgbtohex(&rightcolor);
     }
     else if (mode == 2)
     {
       if (changed) 
       {
         before = clock();
-        *(volatile uint32_t*)(mem_base + SPILED_REG_LED_RGB1_o) = rgbtohex(leftcolor);
-        *(volatile uint32_t*)(mem_base + SPILED_REG_LED_RGB2_o) = isTogether? rgbtohex(leftcolor) : rgbtohex(rightcolor);
+        *(volatile uint32_t*)(mem_base + SPILED_REG_LED_RGB1_o) = rgbtohex(&leftcolor);
+        *(volatile uint32_t*)(mem_base + SPILED_REG_LED_RGB2_o) = isTogether? rgbtohex(&leftcolor) : rgbtohex(&rightcolor);
         gradleft.r = leftcolor.r;
         gradleft.g = leftcolor.g;
         gradleft.b = leftcolor.b;
@@ -636,14 +664,14 @@ int main(int argc, char *argv[])
           t.r = gradleft.r + ((double)difference)/changetime*((int)gradleftnew.r - (int)gradleft.r);
           t.g = gradleft.g + ((double)difference)/changetime*((int)gradleftnew.g - (int)gradleft.g);
           t.b = gradleft.b + ((double)difference)/changetime*((int)gradleftnew.b - (int)gradleft.b);
-            *(volatile uint32_t*)(mem_base + SPILED_REG_LED_RGB1_o) = rgbtohex(t);
-            if (!isTogether)
-            {
-              t.r = gradright.r + ((double)difference)/changetime*((int)gradrightnew.r - (int)gradright.r);
-              t.g = gradright.g + ((double)difference)/changetime*((int)gradrightnew.g - (int)gradright.g);
-              t.b = gradright.b + ((double)difference)/changetime*((int)gradrightnew.b - (int)gradright.b);
-            }
-            *(volatile uint32_t*)(mem_base + SPILED_REG_LED_RGB2_o) = rgbtohex(t);
+          *(volatile uint32_t*)(mem_base + SPILED_REG_LED_RGB1_o) = rgbtohex(&t);
+          if (!isTogether)
+          {
+            t.r = gradright.r + ((double)difference)/changetime*((int)gradrightnew.r - (int)gradright.r);
+            t.g = gradright.g + ((double)difference)/changetime*((int)gradrightnew.g - (int)gradright.g);
+            t.b = gradright.b + ((double)difference)/changetime*((int)gradrightnew.b - (int)gradright.b);
+          }
+          *(volatile uint32_t*)(mem_base + SPILED_REG_LED_RGB2_o) = rgbtohex(&t);
         }
       }
     }
@@ -655,8 +683,8 @@ int main(int argc, char *argv[])
         beforer = clock() - shift;
         lefton = true;
         righton = true;
-        *(volatile uint32_t*)(mem_base + SPILED_REG_LED_RGB1_o) = rgbtohex(leftcolor);
-        *(volatile uint32_t*)(mem_base + SPILED_REG_LED_RGB2_o) = isTogether? rgbtohex(leftcolor) : rgbtohex(rightcolor);
+        *(volatile uint32_t*)(mem_base + SPILED_REG_LED_RGB1_o) = rgbtohex(&leftcolor);
+        *(volatile uint32_t*)(mem_base + SPILED_REG_LED_RGB2_o) = isTogether? rgbtohex(&leftcolor) : rgbtohex(&rightcolor);
         changed = false;
       }
       else
@@ -681,10 +709,10 @@ int main(int argc, char *argv[])
         {
           if (difference >= fadetime)
           {
-            *(volatile uint32_t*)(mem_base + SPILED_REG_LED_RGB1_o) = rgbtohex(leftcolor);
+            *(volatile uint32_t*)(mem_base + SPILED_REG_LED_RGB1_o) = rgbtohex(&leftcolor);
             if (shift == 0) 
             {
-              *(volatile uint32_t*)(mem_base + SPILED_REG_LED_RGB2_o) = isTogether? rgbtohex(leftcolor) : rgbtohex(rightcolor);
+              *(volatile uint32_t*)(mem_base + SPILED_REG_LED_RGB2_o) = isTogether? rgbtohex(&leftcolor) : rgbtohex(&rightcolor);
               righton = true;
             }
             lefton = true;
@@ -706,7 +734,7 @@ int main(int argc, char *argv[])
             {
               if (differencer >= fadetime)
               {
-                *(volatile uint32_t*)(mem_base + SPILED_REG_LED_RGB2_o) = isTogether? rgbtohex(leftcolor) : rgbtohex(rightcolor);
+                *(volatile uint32_t*)(mem_base + SPILED_REG_LED_RGB2_o) = isTogether? rgbtohex(&leftcolor) : rgbtohex(&rightcolor);
                 righton = true;
                 beforer = clock();
               }
