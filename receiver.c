@@ -20,6 +20,11 @@
 #define TARGET_PORT 5555
 #define TARGET_IP "147.32.216.183"
 
+clock_t before = 0;
+clock_t beforer = 0;
+clock_t difference = 0;  
+clock_t differencer = 0; 
+
 typedef struct 
 {
   char r;
@@ -32,8 +37,9 @@ int rgbtohex(RGB* rgb)
 }
 
 char buffer_rx[20],charReflector[1], charMode[1],charRedLeft[3], charGreenLeft[3], charBlueLeft[3], charRedRight[3],charGreenRight[3],charBlueRight[3];
-int reflector[1], mode[1];
-RGB colorLeft, colorRight;
+int reflector, mode, blinktime = 1000000, fadetime = 1000000, shift = 500000, changetime;
+bool isTogether, changed, lefton, righton;
+RGB colorLeft, colorRight, t;
 
 
 int main() 
@@ -93,11 +99,114 @@ int main()
 	memcpy(charBlueRight, buffer_rx + 17, 3);
 	colorRight.b = atoi(charBlueRight);
 
+
+
     if (mode == 1)
     {
       *(volatile uint32_t*)(mem_base + SPILED_REG_LED_RGB1_o) = rgbtohex(&colorLeft);
-      *(volatile uint32_t*)(mem_base + SPILED_REG_LED_RGB2_o) = rgbtohex(&colorRight);
+      *(volatile uint32_t*)(mem_base + SPILED_REG_LED_RGB2_o) = isTogether ? rgbtohex(&colorLeft) : rgbtohex(&colorRight);
+    }
+    else if (mode == 2)
+    {
+      if (changed) 
+      {
+        before = clock();
+        *(volatile uint32_t*)(mem_base + SPILED_REG_LED_RGB1_o) = rgbtohex(&colorLeft);
+        *(volatile uint32_t*)(mem_base + SPILED_REG_LED_RGB2_o) = isTogether? rgbtohex(&colorLeft) : rgbtohex(&colorRight);
+        changed = false;
+      }
+      else
+      {
+        difference = clock() - before;
+        if (difference >= changetime)
+        {
+          before = clock();
+        }
+        // else
+        // {
+        // //   t.r = gradleft.r + ((double)difference)/changetime*((int)gradleftnew.r - (int)gradleft.r);
+        // //   t.g = gradleft.g + ((double)difference)/changetime*((int)gradleftnew.g - (int)gradleft.g);
+        // //   t.b = gradleft.b + ((double)difference)/changetime*((int)gradleftnew.b - (int)gradleft.b);
+        //   *(volatile uint32_t*)(mem_base + SPILED_REG_LED_RGB1_o) = rgbtohex(&t);
+        // //   if (!isTogether)
+        // //   {
+        // //     t.r = gradright.r + ((double)difference)/changetime*((int)gradrightnew.r - (int)gradright.r);
+        // //     t.g = gradright.g + ((double)difference)/changetime*((int)gradrightnew.g - (int)gradright.g);
+        // //     t.b = gradright.b + ((double)difference)/changetime*((int)gradrightnew.b - (int)gradright.b);
+        // //   }
+        //   *(volatile uint32_t*)(mem_base + SPILED_REG_LED_RGB2_o) = rgbtohex(&t);
+        // }
+      }
+    }
+    else
+    {
+      if (changed) 
+      {
+        before = clock();
+        beforer = clock() - shift;
+        lefton = true;
+        righton = true;
+        *(volatile uint32_t*)(mem_base + SPILED_REG_LED_RGB1_o) = rgbtohex(&colorLeft);
+        *(volatile uint32_t*)(mem_base + SPILED_REG_LED_RGB2_o) = isTogether? rgbtohex(&colorLeft) : rgbtohex(&colorRight);
+        changed = false;
+      }
+      else
+      {
+        difference = clock() - before;
+        differencer = clock() - beforer;
+        if (lefton)
+        {
+          if (difference >= blinktime)
+          {
+            *(volatile uint32_t*)(mem_base + SPILED_REG_LED_RGB1_o) = 0x0;
+            if (shift == 0) 
+            {
+              *(volatile uint32_t*)(mem_base + SPILED_REG_LED_RGB2_o) = 0x0;
+              righton = false;
+            }
+            lefton = false;
+            before = clock();
+          }
+        }
+        else
+        {
+          if (difference >= fadetime)
+          {
+            *(volatile uint32_t*)(mem_base + SPILED_REG_LED_RGB1_o) = rgbtohex(&colorLeft);
+            if (shift == 0) 
+            {
+              *(volatile uint32_t*)(mem_base + SPILED_REG_LED_RGB2_o) = isTogether? rgbtohex(&colorLeft) : rgbtohex(&colorRight);
+              righton = true;
+            }
+            lefton = true;
+            before = clock();
+          }
+        }
+        if (shift != 0)
+        {
+            if (righton)
+            {
+              if (differencer >= blinktime)
+              {
+                *(volatile uint32_t*)(mem_base + SPILED_REG_LED_RGB2_o) = 0x0;
+                righton = false;
+                beforer = clock();
+              }
+            }
+            else
+            {
+              if (differencer >= fadetime)
+              {
+                *(volatile uint32_t*)(mem_base + SPILED_REG_LED_RGB2_o) = isTogether? rgbtohex(&colorLeft) : rgbtohex(&colorRight);
+                righton = true;
+                beforer = clock();
+              }
+            }
+        }
+      }
     }
 
-    closesocket(sockfd);
+
+
+    close(sockfd);
 }
