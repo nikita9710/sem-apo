@@ -71,6 +71,7 @@ int main(int argc, char *argv[])
   sprintf(redRight, "%d", 175);
   sprintf(greenRight, "%d", 175);
   sprintf(blueRight, "%d", 175);
+  sprintf(isTogether, "%d",1);
 
   strcat(buffer_rx, strReflector);
   strcat(buffer_rx, strMode);
@@ -80,7 +81,6 @@ int main(int argc, char *argv[])
   strcat(buffer_rx, redRight);
   strcat(buffer_rx, greenRight);
   strcat(buffer_rx, blueRight);
-
 
   sendto(sockfd, buffer_rx, sizeof(buffer_rx), 0, (struct sockaddr*)& addrDest, sizeof(addrDest));
   printf("SENT\n");
