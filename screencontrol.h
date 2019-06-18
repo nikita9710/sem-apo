@@ -1,3 +1,5 @@
+#ifndef SCREENCONTROL_H
+
 #include <stdbool.h>
 
 typedef struct 
@@ -58,4 +60,6 @@ void redrawAll(State * state, bool isSender,  bool isLeft, bool isFirst, char fo
 
 void drawReceiver();
 
-void drawScreen(unsigned char parlcd_mem_base);
+void drawScreen(unsigned char * parlcd_mem_base);
+
+#endif

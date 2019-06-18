@@ -1,3 +1,5 @@
+#ifndef BROADCASTCONTROL_H
+
 #include <stdbool.h>
 #include "screencontrol.h"
 
@@ -13,3 +15,4 @@ bool updateState(State* state, char* buffer_rx);
 
 void prepareData(State* state, char* buffer_rx);
 
+#endif

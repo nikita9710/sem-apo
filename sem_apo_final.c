@@ -375,7 +375,7 @@ int main(int argc, char *argv[])
         clockCounter = clock();
       }   
 
-      drawScreen(&parlcd_mem_base);
+      drawScreen(parlcd_mem_base);
     }
 
     if (changed && sender)

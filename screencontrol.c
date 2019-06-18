@@ -454,7 +454,7 @@ void drawReceiver()
     fillBlock("leave receiver mode", 0, 53,480,53,2);
 }
 
-void drawScreen(unsigned char parlcd_mem_base)
+void drawScreen(unsigned char * parlcd_mem_base)
 {
   for (int x = 0; x < 320; ++x) {
         for (int y = 0; y < 480; ++y) {
