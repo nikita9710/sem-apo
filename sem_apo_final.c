@@ -263,6 +263,14 @@ void redrawSetupLine(int mode, int time, int selectedsetup, char fontsize)
   }
 }
 
+
+char* getTextForSetup(int setup)
+{
+  if (setup == 1) return "Time on:";
+  if (setup == 2) return "Time off:";
+  return "Shift:";
+}
+
 void redrawPrefLine(State* state, int selectedsetup, char fontsize)
 {
   int time = (selectedsetup == 1 ? state->blinktime : (selectedsetup == 2 ? state->fadetime : state->shift))/100000;
@@ -328,13 +336,6 @@ void redrawAll(State * state, bool isSender,  bool isLeft, bool isFirst, char fo
   redrawPrefLine(state, selectedsetup, fontsize);
 }
 
-char* getTextForSetup(int setup)
-{
-  if (setup == 1) return "Time on:";
-  if (setup == 2) return "Time off:";
-  return "Shift:";
-}
-
 void drawReceiver()
 {
     background(0,0,0xffff, 480,0);
@@ -347,35 +348,47 @@ void drawReceiver()
     fillBlock("leave receiver mode", 0, 53,480,53,2);
 }
 
-bool updateState(State* state, char* buffer_rx)
+bool updateDataBool(bool* data, char* buffer_rx, char * offset, const char datasize)
 {
-  char offset = 0;
-  bool changed = false;
-  changed = changed | updateData(&(state->isTogether), buffer_rx, &offset, 1);
-  changed = changed | updateData(&(state->mode), buffer_rx, &offset, 1);
-  changed = changed | updateColor(&(state->leftcolor), buffer_rx, &offset);
-  changed = changed | updateColor(&(state->rightcolor), buffer_rx, &offset);
-  changed = changed | updateColor(&(state->leftnew), buffer_rx, &offset);
-  changed = changed | updateColor(&(state->rightnew), buffer_rx, &offset);
-  changed = changed | updateData(&(state->changetime), buffer_rx, &offset, 6);
-  changed = changed | updateData(&(state->blinktime), buffer_rx, &offset, 6);
-  changed = changed | updateData(&(state->fadetime), buffer_rx, &offset, 6);
-  changed = changed | updateData(&(state->shift), buffer_rx, &offset, 6);
-  return changed;
+
+    bool changed = false;
+    bool tempbool;
+    char * temp[datasize];
+    memcpy(temp, buffer_rx+*offset, datasize);
+    tempbool = (int)strtol(temp, NULL, 16);
+    *offset += datasize;
+    if (*data != tempbool)
+    {
+      *data = tempbool;
+      printf("%d\n", *data);
+      return true;
+    }
+    return false;
 }
 
-bool updateColor(RGB* color, char* buffer_rx, char * offset)
+bool updateDataInt(int* data, char* buffer_rx, char * offset, const char datasize)
 {
-    updateData(&(color->r), buffer_rx, offset, 2);
-    updateData(&(color->g), buffer_rx, offset, 2);
-    updateData(&(color->b), buffer_rx, offset, 2);
-}
 
-
-bool updateData(char* color, char* buffer_rx, char * offset, const char datasize)
-{
     bool changed = false;
     int tempint;
+    char * temp[datasize];
+    memcpy(temp, buffer_rx+*offset, datasize);
+    tempint = (int)strtol(temp, NULL, 16);
+    *offset += datasize;
+    if (*data != tempint)
+    {
+      *data = tempint;
+      printf("%d\n", *data);
+      return true;
+    }
+    return false;
+}
+
+bool updateDataChar(char* color, char* buffer_rx, char * offset, const char datasize)
+{
+
+    bool changed = false;
+    char tempint;
     char temp[datasize];
     memcpy(temp, buffer_rx+*offset, datasize);
     tempint = (int)strtol(temp, NULL, 16);
@@ -383,10 +396,38 @@ bool updateData(char* color, char* buffer_rx, char * offset, const char datasize
     if (*color != tempint)
     {
       *color = tempint;
+      printf("%d\n", *color);
       return true;
     }
     return false;
 }
+
+bool updateColor(RGB* color, char* buffer_rx, char * offset)
+{
+  bool changed = false;
+  changed = changed | updateDataChar(&(color->r), buffer_rx, offset, 2);
+  changed = changed | updateDataChar(&(color->g), buffer_rx, offset, 2);
+  changed = changed | updateDataChar(&(color->b), buffer_rx, offset, 2);
+  return changed;
+}
+
+bool updateState(State* state, char* buffer_rx)
+{
+  char offset = 0;
+  bool changed = false;
+  changed = changed | updateDataBool(&(state->isTogether), buffer_rx, &offset, 1);
+  changed = changed | updateDataInt(&(state->mode), buffer_rx, &offset, 1);
+  changed = changed | updateColor(&(state->leftcolor), buffer_rx, &offset);
+  changed = changed | updateColor(&(state->rightcolor), buffer_rx, &offset);
+  changed = changed | updateColor(&(state->leftnew), buffer_rx, &offset);
+  changed = changed | updateColor(&(state->rightnew), buffer_rx, &offset);
+  changed = changed | updateDataInt(&(state->changetime), buffer_rx, &offset, 6);
+  changed = changed | updateDataInt(&(state->blinktime), buffer_rx, &offset, 6);
+  changed = changed | updateDataInt(&(state->fadetime), buffer_rx, &offset, 6);
+  changed = changed | updateDataInt(&(state->shift), buffer_rx, &offset, 6);
+  return changed;
+}
+
 
 void increasecolor(RGB* color, char dr, char dg, char db)
 {
@@ -467,7 +508,7 @@ void updateRow(State* state, int* currentRow, int* currentColumn)
       *currentRow = 1;
     break;
     default:
-      *currentRow++;
+      (*currentRow)++;
       break;
     }
     break;
@@ -476,11 +517,11 @@ void updateRow(State* state, int* currentRow, int* currentColumn)
     {
     case 2:
       if (*currentColumn == 3 && state->isTogether) *currentColumn = 2;
-      *currentRow++;
+      (*currentRow)++;
       break;
     case 3:
       if (*currentColumn == 1) *currentColumn = 2;
-      *currentRow++;
+      (*currentRow)++;
       break;
     case 4:
       *currentRow = 6;
@@ -490,7 +531,7 @@ void updateRow(State* state, int* currentRow, int* currentColumn)
       *currentRow = 1;
     break;
     default:
-      *currentRow++;
+      (*currentRow)++;
       break;
     }
     break;
@@ -507,7 +548,7 @@ void updateRow(State* state, int* currentRow, int* currentColumn)
       break;
     case 4:
       if (*currentColumn == 1) *currentColumn = 2;
-      *currentRow++;
+      (*currentRow)++;
       break;
     case 5:
       *currentRow = 6;
@@ -517,7 +558,7 @@ void updateRow(State* state, int* currentRow, int* currentColumn)
       *currentRow = 1;
     break;
     default:
-      *currentRow++;
+      (*currentRow)++;
       break;
     }
     break;
@@ -572,6 +613,28 @@ void parepareData(State* state, char* buffer_rx)
   printf("\nInfo Sent");
 }
 
+void resetState(State* state)
+{
+  state->mode = 1;
+  state->isTogether = false;
+  state->leftcolor.r = 243;
+  state->leftcolor.g = 31;
+  state->leftcolor.b = 83;
+  state->rightcolor.r = 40;
+  state->rightcolor.g = 240;
+  state->rightcolor.b = 250;
+  state->leftnew.r = 192;
+  state->leftnew.g = 56;
+  state->leftnew.b = 222;
+  state->rightnew.r = 10;
+  state->rightnew.g =130;
+  state->rightnew.b = 200;
+  state->changetime = 1000000;
+  state->blinktime = 1000000;
+  state->fadetime = 1000000;
+  state->shift = 500000;
+}
+
 int main(int argc, char *argv[])
 { 
   //for all
@@ -579,13 +642,13 @@ int main(int argc, char *argv[])
   int sockfd = -1;
   struct sockaddr_in bindaddr;  
   struct sockaddr_in braddr;
+  fd_set readfds, masterfds;
   bool receiver = false, sender = false;
 
   unsigned char *mem_base;
-
   mem_base = map_phys_address(SPILED_REG_BASE_PHYS, SPILED_REG_SIZE, 0);
-
   if (mem_base == NULL) exit(1);
+
   uint32_t rgb_knobs_value;
   int rk, gk, bk,rb, gb, bb;
   clock_t before = 0;
@@ -594,16 +657,6 @@ int main(int argc, char *argv[])
   clock_t difference = 0;  
   clock_t differencer = 0; 
   State state = {1, false, {243, 31, 83}, {40, 240, 250},{192,56,222},{10,130,200}, 1000000, 1000000, 1000000, 500000};
-  // bool isTogether = false;
-  // RGB leftcolor = {243, 31, 83}, rightcolor = {40, 240, 250}, 
-  //     leftnew = {192,56,222}, rightnew = {10,130,200};
-  // int mode = 1; //1 - still, 2 - gradient, 3 - blinkink
-  // int changetime = 1000000;
-  // int blinktime = 1000000, fadetime = 1000000, shift = 500000;
-
-  char tempcolor;
-  bool temptogether;
-  int tempint;
   rgb_knobs_value = *(volatile uint32_t*)(mem_base + SPILED_REG_KNOBS_8BIT_o);
   int rprev = (rgb_knobs_value>>16) & 0xFF, gprev = (rgb_knobs_value>>8)  & 0xFF, bprev = rgb_knobs_value      & 0xFF;
   RGB t = {0,0,0}, 
@@ -620,19 +673,8 @@ int main(int argc, char *argv[])
   parlcd_hx8357_init(parlcd_mem_base);
   *(volatile uint16_t*)(parlcd_mem_base + PARLCD_REG_CMD_o) = 0x2c;
 
-
-  // if (mode == 2) redrawAll(receiver, sender, isTogether, &leftcolor, &rightcolor, &leftnew, &rightnew, mode, isTogether, isFirst,fontsize, getTextForSetup(selectedsetup), changetime/100000, selectedsetup);
-  // else if (mode == 3)
-  // {
-  //   if (selectedsetup == 1) redrawAll(receiver, sender, isTogether, &leftcolor, &rightcolor, &leftnew, &rightnew, mode, isLeft, isFirst,fontsize, getTextForSetup(selectedsetup), blinktime/100000, selectedsetup);
-  //   else if (selectedsetup == 2) redrawAll(receiver, sender, isTogether, &leftcolor, &rightcolor, &leftnew, &rightnew, mode, isLeft, isFirst,fontsize, getTextForSetup(selectedsetup), fadetime/100000, selectedsetup);
-  //   else redrawAll(receiver, sender, isTogether, &leftcolor, &rightcolor, &leftnew, &rightnew, mode, isLeft, isFirst,fontsize, getTextForSetup(selectedsetup), shift/100000, selectedsetup);
-  // }
-  // else redrawAll(receiver, sender, isTogether, &leftcolor, &rightcolor, &leftnew, &rightnew, mode, isLeft, isFirst,fontsize, getTextForSetup(selectedsetup), 0, selectedsetup);
-  
   redrawAll(&state, sender, isLeft, isFirst, fontsize, selectedsetup);
   focus(currentColumn, currentRow, state.mode);
-  fd_set readfds, masterfds;
 
   while (1)
   {
@@ -657,24 +699,7 @@ int main(int argc, char *argv[])
         }
         receiver = false;
         sender = true;
-        state. mode = 1;
-        state.isTogether = false;
-        state.leftcolor.r = 243;
-        state.leftcolor.g = 31;
-        state.leftcolor.b = 83;
-        state.rightcolor.r = 40;
-        state.rightcolor.g = 240;
-        state.rightcolor.b = 250;
-        state.leftnew.r = 192;
-        state.leftnew.g = 56;
-        state.leftnew.b = 222;
-        state.rightnew.r = 10;
-        state.rightnew.g =130;
-        state.rightnew.b = 200;
-        state.changetime = 1000000;
-        state.blinktime = 1000000;
-        state.fadetime = 1000000;
-        state.shift = 500000;
+        resetState(&state);
         memset(&braddr, 0, sizeof(braddr));
         braddr.sin_family = AF_INET;
         braddr.sin_port = htons(LOCAL_PORT);
@@ -692,252 +717,249 @@ int main(int argc, char *argv[])
 
       recvfrom(sockfd, buffer_rx, 60, 0, (struct sockaddr*)&braddr, &braddr);
 
-      updateState(&state, buffer_rx);
+      changed = updateState(&state, buffer_rx);
     }
     else
     {
-    if (rprev != rk || gprev != gk || bprev != bk)
-    {
-      int dr = rk-rprev,db = bk-bprev,dg = gk-gprev;
-      rprev = rk;
-      gprev = gk;
-      bprev = bk;
-      if (isLeft)
+      if (rprev != rk || gprev != gk || bprev != bk)
       {
-        if (state.mode == 2 && !isFirst) increasecolor(&state.leftnew, dr, db, db);
-        else increasecolor(&state.leftcolor, dr, db, db);
-      }
-      else
-      {
-        if (state.mode == 2 && !isFirst)increasecolor(&state.rightnew, dr, db, db);
-        else increasecolor(&state.rightcolor, dr, db, db);
-      }
-      changed = true;
-      updateColors(&state, isLeft, isFirst,fontsize);
-      focus(currentColumn, currentRow, state.mode);
-    }
-
-
-    if(rb && (clock()-clockCounter>=180000)){
-      prevColumn = currentColumn;
-      prevRow = currentRow;
-      updateColumn(&state, &currentRow, &currentColumn);
-      setfocus(currentColumn, currentRow, prevColumn, prevRow, state.mode);
-      clockCounter = clock();
-    }
-
-
-    if(gb && (clock()-clockCounter>=180000)){
-      prevColumn = currentColumn;
-      prevRow = currentRow;
-      updateRow(&state, &currentRow, &currentColumn);
-      setfocus(currentColumn, currentRow, prevColumn, prevRow, state.mode);
-      clockCounter = clock();
-    }
-
-    if(bb && (clock()-clockCounter>=300000)){
-      switch (currentRow)
-      {
-      case 1:
-        changed = true;
-        switch (currentColumn)
+        int dr = rk-rprev,db = bk-bprev, dg = gk-gprev;
+        rprev = rk;
+        gprev = gk;
+        bprev = bk;
+        if (isLeft)
         {
-        case 1:
-          if (!isLeft || state.isTogether) changed = true;
-          isLeft = true;
-          state.isTogether = false;
-          break;
-        case 2:
-          if (isLeft || state.isTogether) changed = true;
-          isLeft = false;
-          state.isTogether = false;
-          break;
-        case 3:
-          if (!state.isTogether) changed = true;
-          isLeft = true;
-          state.isTogether = true;
-          break;
-        }
-        redrawLEDLine(state.isTogether, isLeft,fontsize);
-        updateColors(&state, isLeft, isFirst,fontsize);
-        setCopyButton(!state.isTogether,fontsize);
-        focus(currentColumn, currentRow, state.mode);
-        break;
-      case 2:
-        changed = true;
-        state.mode = currentColumn;
-        redrawSetupLine(state.mode,state.changetime/100000, selectedsetup,fontsize);
-        redrawPrefLine(&state, selectedsetup,fontsize);
-        redrawModeLine(state.mode,fontsize);
-        updateColors(&state, isLeft, isFirst,fontsize);
-        break;
-      case 3:
-        changed = true;
-        if (state.mode == 2)
-        {
-            switch (currentColumn)
-            {
-              case 1:
-                isFirst = true;
-              break;
-              case 2:
-                isFirst = false;
-              break;
-              case 3:
-                if (isLeft)
-                {
-                  state.leftcolor.r = state.rightcolor.r;
-                  state.leftcolor.g = state.rightcolor.g;
-                  state.leftcolor.b = state.rightcolor.b;
-                  state.leftnew.r = state.rightnew.r;
-                  state.leftnew.g = state.rightnew.g;
-                  state.leftnew.b = state.rightnew.b;
-                }
-                else
-                {
-                  state.rightcolor.r = state.leftcolor.r;
-                  state.rightcolor.g = state.leftcolor.g;
-                  state.rightcolor.b = state.leftcolor.b;
-                  state.rightnew.r = state.leftnew.r;
-                  state.rightnew.g = state.leftnew.g;
-                  state.rightnew.b = state.leftnew.b;
-                }
-              break;
-            }
-            updateColors(&state, isLeft, isFirst,fontsize);
+          if (state.mode == 2 && !isFirst) increasecolor(&state.leftnew, dr, db, db);
+          else increasecolor(&state.leftcolor, dr, dg, db);
         }
         else
         {
-          if (isLeft)
-          {
-            state.leftcolor.r = state.rightcolor.r;
-            state.leftcolor.g = state.rightcolor.g;
-            state.leftcolor.b = state.rightcolor.b;
-          }
-          else
-          {
-            state.rightcolor.r = state.leftcolor.r;
-            state.rightcolor.g = state.leftcolor.g;
-            state.rightcolor.b = state.leftcolor.b;
-          }
-          updateColors(&state, isLeft, isFirst,fontsize);
+          if (state.mode == 2 && !isFirst)increasecolor(&state.rightnew, dr, dg, db);
+          else increasecolor(&state.rightcolor, dr, dg, db);
         }
-        break;
-        case 4:
+        changed = true;
+        updateColors(&state, isLeft, isFirst,fontsize);
+        focus(currentColumn, currentRow, state.mode);
+      }
+
+
+      if(rb && (clock()-clockCounter>=180000)){
+        prevColumn = currentColumn;
+        prevRow = currentRow;
+        updateColumn(&state, &currentRow, &currentColumn);
+        setfocus(currentColumn, currentRow, prevColumn, prevRow, state.mode);
+        clockCounter = clock();
+      }
+
+
+      if(gb && (clock()-clockCounter>=180000)){
+        prevColumn = currentColumn;
+        prevRow = currentRow;
+        updateRow(&state, &currentRow, &currentColumn);
+        setfocus(currentColumn, currentRow, prevColumn, prevRow, state.mode);
+        clockCounter = clock();
+      }
+
+      if(bb && (clock()-clockCounter>=300000)){
+        switch (currentRow)
+        {
+        case 1:
+          changed = true;
+          switch (currentColumn)
+          {
+          case 1:
+            isLeft = true;
+            state.isTogether = false;
+            break;
+          case 2:
+            isLeft = false;
+            state.isTogether = false;
+            break;
+          case 3:
+            isLeft = true;
+            state.isTogether = true;
+            break;
+          }
+          redrawLEDLine(state.isTogether, isLeft,fontsize);
+          updateColors(&state, isLeft, isFirst,fontsize);
+          setCopyButton(!state.isTogether,fontsize);
+          focus(currentColumn, currentRow, state.mode);
+          break;
+        case 2:
+          changed = true;
+          state.mode = currentColumn;
+          redrawSetupLine(state.mode,state.changetime/100000, selectedsetup,fontsize);
+          redrawPrefLine(&state, selectedsetup,fontsize);
+          redrawModeLine(state.mode,fontsize);
+          updateColors(&state, isLeft, isFirst,fontsize);
+          break;
+        case 3:
+          changed = true;
           if (state.mode == 2)
           {
+              switch (currentColumn)
+              {
+                case 1:
+                  isFirst = true;
+                break;
+                case 2:
+                  isFirst = false;
+                break;
+                case 3:
+                  if (isLeft)
+                  {
+                    state.leftcolor.r = state.rightcolor.r;
+                    state.leftcolor.g = state.rightcolor.g;
+                    state.leftcolor.b = state.rightcolor.b;
+                    state.leftnew.r = state.rightnew.r;
+                    state.leftnew.g = state.rightnew.g;
+                    state.leftnew.b = state.rightnew.b;
+                  }
+                  else
+                  {
+                    state.rightcolor.r = state.leftcolor.r;
+                    state.rightcolor.g = state.leftcolor.g;
+                    state.rightcolor.b = state.leftcolor.b;
+                    state.rightnew.r = state.leftnew.r;
+                    state.rightnew.g = state.leftnew.g;
+                    state.rightnew.b = state.leftnew.b;
+                  }
+                  updateColors(&state, isLeft, isFirst,fontsize);
+                  break;
+              }
+          }
+          else
+          {
+            if (isLeft)
+            {
+              state.leftcolor.r = state.rightcolor.r;
+              state.leftcolor.g = state.rightcolor.g;
+              state.leftcolor.b = state.rightcolor.b;
+            }
+            else
+            {
+              state.rightcolor.r = state.leftcolor.r;
+              state.rightcolor.g = state.leftcolor.g;
+              state.rightcolor.b = state.leftcolor.b;
+            }
+            updateColors(&state, isLeft, isFirst,fontsize);
+          }
+          break;
+          case 4:
+            if (state.mode == 2)
+            {
+              changed = true;
+              if (currentColumn == 2)
+              {
+                state.changetime += 500000;
+                if (state.changetime == 10500000) state.changetime = 500000;
+              }
+              else
+              {
+                state.changetime -= 500000;
+                if (state.changetime == 0) state.changetime = 10000000;
+              }
+              redrawSetupLine(state.mode, state.changetime/100000, selectedsetup, fontsize);
+            }
+            else
+            {
+              selectedsetup = currentColumn;
+              redrawSetupLine(state.mode, 0, selectedsetup, fontsize);
+              redrawPrefLine(&state, selectedsetup,fontsize);
+            }
+            break;
+          case 5:
             changed = true;
-            if (currentColumn == 2)
+            if (selectedsetup == 1)
             {
-              state.changetime += 500000;
-              if (state.changetime == 10500000) state.changetime = 500000;
+              if (currentColumn == 2)
+                {
+                  state.blinktime += 100000;
+                  if (state.blinktime == 5100000) state.blinktime = 100000;
+                }
+                else
+                {
+                  state.blinktime -= 100000;
+                  if (state.blinktime == 0) state.blinktime = 5000000;
+                }
+            }
+            else if (selectedsetup == 2)
+            {
+              if (currentColumn == 2)
+                {
+                  state.fadetime += 100000;
+                  if (state.fadetime == 5100000) state.fadetime = 100000;
+                }
+                else
+                {
+                  state.fadetime -= 100000;
+                  if (state.fadetime == 0) state.fadetime = 5000000;
+                }
             }
             else
             {
-              state.changetime -= 500000;
-              if (state.changetime == 0) state.changetime = 10000000;
+              if (currentColumn == 2)
+                {
+                  state.shift += 100000;
+                  if (state.shift == 5100000) state.shift = 0;
+                }
+                else
+                {
+                  state.shift -= 100000;
+                  if (state.shift < 0) state.shift = 5000000;
+                }
             }
-            redrawSetupLine(state.mode, state.changetime/100000, selectedsetup, fontsize);
-          }
-          else
-          {
-            selectedsetup = currentColumn;
-            redrawSetupLine(state.mode, 0, selectedsetup, fontsize);
             redrawPrefLine(&state, selectedsetup,fontsize);
-          }
-          break;
-        case 5:
-          changed = true;
-          if (selectedsetup == 1)
-          {
-            if (currentColumn == 2)
-              {
-                state.blinktime += 100000;
-                if (state.blinktime == 5100000) state.blinktime = 100000;
-              }
-              else
-              {
-                state.blinktime -= 100000;
-                if (state.blinktime == 0) state.blinktime = 5000000;
-              }
-          }
-          else if (selectedsetup == 2)
-          {
-            if (currentColumn == 2)
-              {
-                state.fadetime += 100000;
-                if (state.fadetime == 5100000) state.fadetime = 100000;
-              }
-              else
-              {
-                state.fadetime -= 100000;
-                if (state.fadetime == 0) state.fadetime = 5000000;
-              }
-          }
-          else
-          {
-            if (currentColumn == 2)
-              {
-                state.shift += 100000;
-                if (state.shift == 5100000) state.shift = 0;
-              }
-              else
-              {
-                state.shift -= 100000;
-                if (state.shift < 0) state.shift = 5000000;
-              }
-          }
-          redrawPrefLine(&state, selectedsetup,fontsize);
-          break;
-        case 6:
-          if (currentColumn == 3)
-          {
-            fontsize = fontsize == 2? 1 : 2;
-            redrawAll(&state, sender, isLeft, isFirst, fontsize, selectedsetup);
-          }
-          else
-          {
-            if (sender)
+            break;
+          case 6:
+            if (currentColumn == 3)
             {
-              close(sockfd);
-              receiver = false;
-              sender = false;
-              redrawConnection(sender, fontsize);
+              fontsize = fontsize == 2? 1 : 2;
+              redrawAll(&state, sender, isLeft, isFirst, fontsize, selectedsetup);
             }
             else
             {
-              if (sockfd != -1) close(sockfd);
-              sockfd = socket(AF_INET,SOCK_DGRAM,0);
-              int broadcast = 1;
-              if (setsockopt(sockfd, SOL_SOCKET, SO_BROADCAST, &broadcast,
-                  sizeof broadcast) == -1) {
-                  perror("setsockopt (SO_BROADCAST)");
+              if (sender)
+              {
+                close(sockfd);
+                receiver = false;
+                sender = false;
+                redrawConnection(sender, fontsize);
+              }
+              else
+              {
+                if (sockfd != -1) close(sockfd);
+                sockfd = socket(AF_INET,SOCK_DGRAM,0);
+                int broadcast = 1;
+                if (setsockopt(sockfd, SOL_SOCKET, SO_BROADCAST, &broadcast,
+                    sizeof broadcast) == -1) {
+                    perror("setsockopt (SO_BROADCAST)");
+                    exit(1);
+                }
+                receiver = true;
+                sender = false;
+                memset(&bindaddr, 0, sizeof(bindaddr));
+                bindaddr.sin_family = AF_INET;
+                bindaddr.sin_port = htons(LOCAL_PORT);
+                bindaddr.sin_addr.s_addr = INADDR_ANY;
+                if (bind(sockfd, (struct sockaddr *)&bindaddr, sizeof(bindaddr)) == -1) {
+                  perror("bind");
                   exit(1);
+                }
+                drawReceiver();
               }
-              receiver = true;
-              sender = false;
-              memset(&bindaddr, 0, sizeof(bindaddr));
-              bindaddr.sin_family = AF_INET;
-              bindaddr.sin_port = htons(LOCAL_PORT);
-              bindaddr.sin_addr.s_addr = INADDR_ANY;
-              if (bind(sockfd, (struct sockaddr *)&bindaddr, sizeof(bindaddr)) == -1) {
-                perror("bind");
-                exit(1);
-              }
-              drawReceiver();
             }
-          }
-          break;
-      }
-      if (!receiver) focus(currentColumn, currentRow, state.mode);
-      clockCounter = clock();
-    }   
+            break;
+        }
+        if (!receiver) focus(currentColumn, currentRow, state.mode);
+        clockCounter = clock();
+      }   
 
-    for (int x = 0; x < 320; ++x) {
-		  for (int y = 0; y < 480; ++y) {
-			  parlcd_write_data(parlcd_mem_base, lcdPixels[y][x]);
-		  }
-    }
+      for (int x = 0; x < 320; ++x) {
+        for (int y = 0; y < 480; ++y) {
+          parlcd_write_data(parlcd_mem_base, lcdPixels[y][x]);
+        }
+      }
     }
 
     if (changed && sender)
@@ -1079,7 +1101,5 @@ int main(int argc, char *argv[])
     }
   }
   
-
-
   return 0;
 }
