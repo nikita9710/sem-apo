@@ -1,5 +1,5 @@
 #ifndef SCREENCONTROL_H
-
+#define SCREENCONTROL_H
 #include <stdbool.h>
 
 typedef struct 
@@ -40,6 +40,7 @@ void updateRow(State* state, int* currentRow, int* currentColumn);
 
 void updateColors(State* state, bool isLeft, bool isFirst, char fontsize);
 
+
 void setCopyButton(bool isOn, char fontsize);
 
 void redrawLEDLine(bool isTogether, bool isLeft, char fontsize);
@@ -60,6 +61,5 @@ void redrawAll(State * state, bool isSender,  bool isLeft, bool isFirst, char fo
 
 void drawReceiver();
 
-void drawScreen(unsigned char * parlcd_mem_base);
-
-#endif
+void drawScreen(unsigned char *parlcd_mem_base);
+#endif /*SCREENCONTROL_H*/

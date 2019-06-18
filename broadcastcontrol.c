@@ -1,4 +1,5 @@
 #include "broadcastcontrol.h"
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdint.h>
@@ -7,7 +8,6 @@
 #include "mzapo_parlcd.h"
 #include "mzapo_phys.h"
 #include "mzapo_regs.h"
-#include "font_prop14x16.c"
 #include <string.h>
 #include <errno.h>
 #include <netdb.h>

@@ -1,5 +1,5 @@
 #ifndef BROADCASTCONTROL_H
-
+#define BROADCASTCONTROL_H
 #include <stdbool.h>
 #include "screencontrol.h"
 
@@ -14,5 +14,4 @@ bool updateColor(RGB* color, char* buffer_rx, char * offset);
 bool updateState(State* state, char* buffer_rx);
 
 void prepareData(State* state, char* buffer_rx);
-
-#endif
+#endif /*BROADCASTCONTROL_H*/
