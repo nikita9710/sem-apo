@@ -21,9 +21,8 @@
 
 bool updateDataBool(bool* data, char* buffer_rx, char * offset, const char datasize)
 {
-    bool changed = false;
     bool tempbool;
-    char * temp[datasize];
+    char temp[datasize];
     memcpy(temp, buffer_rx+*offset, datasize);
     tempbool = (int)strtol(temp, NULL, 16);
     *offset += datasize;
@@ -38,10 +37,8 @@ bool updateDataBool(bool* data, char* buffer_rx, char * offset, const char datas
 
 bool updateDataInt(int* data, char* buffer_rx, char * offset, const char datasize)
 {
-
-    bool changed = false;
     int tempint;
-    char * temp[datasize];
+    char temp[datasize];
     memcpy(temp, buffer_rx+*offset, datasize);
     tempint = (int)strtol(temp, NULL, 16);
     *offset += datasize;
@@ -56,8 +53,6 @@ bool updateDataInt(int* data, char* buffer_rx, char * offset, const char datasiz
 
 bool updateDataChar(char* color, char* buffer_rx, char * offset, const char datasize)
 {
-
-    bool changed = false;
     char tempint;
     char temp[datasize];
     memcpy(temp, buffer_rx+*offset, datasize);
