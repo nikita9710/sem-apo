@@ -6,7 +6,7 @@ CFLAGS =-g -std=gnu99 -O1 -Wall
 CXXFLAGS = -g -std=gnu++11 -O1 -Wall
 LDFLAGS = -lrt -lpthread
 
-SOURCES = sem_apo_final.c mzapo_phys.c mzapo_parlcd.c
+SOURCES = sem_apo_final.c mzapo_phys.c mzapo_parlcd.c broadcastcontrol.c screencontrol.c
 #SOURCES += font_prop14x16.c font_rom8x16.c
 TARGET_EXE = sem_apo_final
 #TARGET_IP ?= 192.168.202.127
