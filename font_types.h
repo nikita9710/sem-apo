@@ -26,7 +26,7 @@ extern "C" {
 
 typedef uint16_t font_bits_t;
 
-/* builtin C-based proportional/fixed font structure*/
+/**@brief builtin C-based proportional/fixed font structure*/
 typedef struct {
         char *                  name;           /* font name*/
         int                             maxwidth;       /* max width in pixels*/
